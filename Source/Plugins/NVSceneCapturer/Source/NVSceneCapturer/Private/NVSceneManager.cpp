@@ -33,7 +33,7 @@ ANVSceneManager::ANVSceneManager(const FObjectInitializer& ObjectInitializer) : 
     bCaptureAtAllMarkers = true;
     SceneManagerState = ENVSceneManagerState::NotActive;
     CurrentSceneMarker = nullptr;
-    bAutoExitAfterExportingComplete = true;
+    bAutoExitAfterExportingComplete = false;
 }
 
 ANVSceneManager* ANVSceneManager::GetANVSceneManagerPtr()
@@ -99,63 +99,102 @@ void ANVSceneManager::PostInitializeComponents()
     }
 }
 
+void ANVSceneManager::RestartSceneManager()
+{
+	UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: restartSceneManager"));
+
+	ResetState();
+	//Reset();
+	RepeatingCallsRemaining = 1;
+	//this needs to be called from within the plugins completion
+	//state
+	//m_simpleCapturer->restartCaptureActor();
+	
+}
+void ANVSceneManager::BGControllerIsDoneDropping(bool state)
+{
+	if (m_simpleCapturer)
+	{
+		m_simpleCapturer->BGControllerIsDoneDropping(state);
+	}
+}
+
+void ANVSceneManager::RepeatingFunction()
+{
+	//#miker: effectively a poor mans lazy loading
+	if (--RepeatingCallsRemaining <= 0)
+	{
+
+		UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: RepeatingFunction ANVSceneManager"));
+		GetWorldTimerManager().ClearTimer(MemberTimerHandle);
+		// MemberTimerHandle can now be reused for any other Timer.
+	}
+}
+
+
+//#miker:
+const float DELAYBEGINDELAYSM = 2.0f;
+
 void ANVSceneManager::BeginPlay()
 {
     Super::BeginPlay();
-
-    UWorld* World = GetWorld();
+	UWorld* World = GetWorld();
 #if WITH_EDITOR
-    bool bIsSimulating = GUnrealEd ? (GUnrealEd->bIsSimulatingInEditor || GUnrealEd->bIsSimulateInEditorQueued) : false;
-    if (!World || !World->IsGameWorld() || bIsSimulating)
-    {
-        return;
-    }
+	bool bIsSimulating = GUnrealEd ? (GUnrealEd->bIsSimulatingInEditor || GUnrealEd->bIsSimulateInEditorQueued) : false;
+	if (!World || !World->IsGameWorld() || bIsSimulating)
+	{
+		return;
+	}
 #endif
-    ensure(World);
-    if (World)
-    {
-        for (int i = SceneMarkers.Num() - 1; i >= 0; i--)
-        {
-            if (!SceneMarkers[i])
-            {
-                SceneMarkers.RemoveAt(i);
-            }
-        }
-        if (SceneMarkers.Num() <= 0)
-        {
-            bCaptureAtAllMarkers = false;
-        }
+	ensure(World);
+	if (World)
+	{
+		for (int i = SceneMarkers.Num() - 1; i >= 0; i--)
+		{
+			if (!SceneMarkers[i])
+			{
+				SceneMarkers.RemoveAt(i);
+			}
+		}
+		if (SceneMarkers.Num() <= 0)
+		{
+			bCaptureAtAllMarkers = false;
+		}
 
-        if (SceneManagerState == ENVSceneManagerState::Active)
-        {
-            SceneCapturers.Reset();
-            for (TActorIterator<ANVSceneCapturerActor> It(World); It; ++It)
-            {
-                ANVSceneCapturerActor* CheckCapturer = *It;
-                if (CheckCapturer)
-                {
-                    SceneCapturers.Add(CheckCapturer);
-                    CheckCapturer->OnCompletedEvent.AddDynamic(this, &ANVSceneManager::OnCapturingCompleted);
-                }
-            }
+		if (SceneManagerState == ENVSceneManagerState::Active)
+		{
+			SceneCapturers.Reset();
+			for (TActorIterator<ANVSceneCapturerActor> It(World); It; ++It)
+			{
+				ANVSceneCapturerActor* CheckCapturer = *It;
+				if (CheckCapturer)
+				{
+					if (m_simpleCapturer == nullptr)
+					{
+						m_simpleCapturer = CheckCapturer;
+					}
+					SceneCapturers.Add(CheckCapturer);
+					CheckCapturer->OnCompletedEvent.AddDynamic(this, &ANVSceneManager::OnCapturingCompleted);
+				}
+			}
 
-            UpdateSettingsFromCommandLine();
+			UpdateSettingsFromCommandLine();
 
-            ObjectClassSegmentation.Init(this);
-            ObjectInstanceSegmentation.Init(this);
+			ObjectClassSegmentation.Init(this);
+			ObjectInstanceSegmentation.Init(this);
 
-            if (bCaptureAtAllMarkers)
-            {
-                CurrentMarkerIndex = -1;
-                FocusNextMarker();
-            }
-            else
-            {
-                CurrentMarkerIndex = 0;
-                SetupScene();
-            }
-        }
-    }
+			if (bCaptureAtAllMarkers)
+			{
+				CurrentMarkerIndex = -1;
+				FocusNextMarker();
+			}
+			else
+			{
+				CurrentMarkerIndex = 0;
+				SetupScene();
+			}
+		}
+	}
 }
 
 void ANVSceneManager::UpdateSettingsFromCommandLine()
@@ -220,6 +259,7 @@ void ANVSceneManager::SetupScene()
         SetupSceneInternal();
 
         // After the scene setup is done then start applying class and instance segmentation marks
+		// miker:
         UpdateSegmentationMask();
 
         // TODO: Broadcast Ready event
@@ -237,7 +277,7 @@ void ANVSceneManager::SetupSceneInternal()
         for (ANVSceneCapturerActor* CheckCapturer : SceneCapturers)
         {
             // ToDo: Use GetCurrentState() instead of bIsActive.
-            // CheckCapturer->GetCurrentState() is available after BeginPlay life cycle.
+            // CheckCapturer->GetCurrentState() is available after BeginPlay life cycle.            
             if (CheckCapturer && CheckCapturer->bIsActive)
             {
                 SceneMarker->AddObserver(CheckCapturer);
@@ -321,14 +361,26 @@ void ANVSceneManager::OnCapturingCompleted(ANVSceneCapturerActor* SceneCapturer,
 
         if (bAllCapturerCompleted)
         {
+			//#miker: if we're complete then let's restart...
+			//this cannot be done from the controller as there
+			//is some janky time delayed statefulness that needs to be adhered to
+			//in this plugin...
+			for (ANVSceneCapturerActor* CheckCapturer : SceneCapturers)
+			{
+				CheckCapturer->restartCaptureActor();
+			}			
+
             if (IsAllSceneCaptured())
             {
+				UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: nvscenemanager::...scene captured in its entirety"));
+
                 SceneManagerState = ENVSceneManagerState::Captured;
                 if (bAutoExitAfterExportingComplete)
                 {
                     UWorld* World = GetWorld();
                     if (World && GEngine)
                     {
+
                         GEngine->Exec(World, TEXT("exit"));
                     }
                 }

@@ -77,6 +77,14 @@ public:
 	UPROPERTY(EditAnywhere, Category = CapturerScene)
 	FNVObjectSegmentation_Instance ObjectInstanceSegmentation;
 
+	//#miker: bg block
+	FTimerHandle MemberTimerHandle;
+	int RepeatingCallsRemaining = 1;
+	ANVSceneCapturerActor* m_simpleCapturer = nullptr;
+	void RepeatingFunction();
+	void RestartSceneManager();
+	void BGControllerIsDoneDropping(bool state);
+
 protected:
     virtual void PreInitializeComponents() override;
     virtual void PostInitializeComponents() override;

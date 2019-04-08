@@ -201,6 +201,32 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FNVSceneCapturer_Completed OnCompletedEvent;
 
+	//#miker:
+	void RepeatingFunction();
+	FTimerHandle MemberTimerHandle;
+	int RepeatingCallsRemaining = 1;
+	void restartCaptureActor();
+	int m_currentFrameIndex  = 0;
+	int m_lastFrameIndex  = -1;
+	int m_accumulatedFrameIndex = 0;
+	// used for sim exit per run in the capture actor
+	// this is reset after each sim cycle 
+	//int32 m_currentFrameIndex = 0;
+	// used to control the overall sim iteration count
+	int32 m_overallFrameAccumulator = 0;
+	bool m_BGControllerReady = false;
+	bool m_BGCapturing = false;
+	int BGNumberOfFramesToCapture = 1;
+	void BGControllerIsDoneDropping(bool state) 
+	{
+		m_BGControllerReady = state;
+	}
+
+	bool isBGControllerDone() 
+	{ 
+		return m_BGControllerReady; 
+	}
+
 protected:
     virtual void PostLoad() final;
     virtual void BeginPlay() final;
@@ -216,7 +242,7 @@ protected:
     void UpdateSettingsFromCommandLine();
     void UpdateViewpointList();
     void StartCapturing_Internal();
-    void CaptureSceneToPixelsData();
+	void CaptureSceneToPixelsData();//int frame_index = 0);
     void CheckCaptureScene();
     void UpdateCapturerSettings();
     void OnCompleted();

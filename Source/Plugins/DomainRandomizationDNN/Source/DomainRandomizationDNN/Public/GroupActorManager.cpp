@@ -47,8 +47,9 @@ void AGroupActorManager::BeginPlay()
 
 void AGroupActorManager::SpawnActors()
 {
-    DestroyManagedActors();
-
+#if WITH_EDITORONLY_DATA
+	DestroyManagedActors();
+#endif
     TArray<FNVActorTemplateConfig> ActorTemplates;
     ActorTemplates.Reset();
 
@@ -322,7 +323,7 @@ void AGroupActorManager::Tick(float DeltaTime)
     }
 }
 
-
+#if WITH_EDITORONLY_DATA
 
 void AGroupActorManager::DestroyManagedActors()
 {
@@ -336,7 +337,7 @@ void AGroupActorManager::DestroyManagedActors()
     }
     ManagedActors.Reset();
 }
-#if WITH_EDITORONLY_DATA
+
 void AGroupActorManager::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
     const UProperty* PropertyThatChanged = PropertyChangedEvent.MemberProperty;

@@ -5,7 +5,8 @@
 */
 #include "NVUtilitiesModule.h"
 
-IMPLEMENT_MODULE(INVUtilitiesModule, NVDataObject)
+//#miker:lame...
+IMPLEMENT_MODULE(INVUtilitiesModule, NVUtilities)
 
 //General Log
 DEFINE_LOG_CATEGORY(LogNVUtilities);

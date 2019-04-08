@@ -29,7 +29,7 @@ UNVSceneDataExporter::UNVSceneDataExporter() : Super(),
     ImageWrapperModule(&FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper")))
 {
     RootCapturedDirectoryPath.Path = DefaultDataOutputFolder;
-    DirectoryConflictHandleType = ENVCaptureDirectoryConflictHandleType::CleanDirectory;
+	DirectoryConflictHandleType = ENVCaptureDirectoryConflictHandleType::OverwriteExistingFiles;// CleanDirectory;
     CustomDirectoryName = TEXT("Custom");
     bUseMapNameForCapturedDirectory = true;
     bAutoOpenExportedDirectory = false;

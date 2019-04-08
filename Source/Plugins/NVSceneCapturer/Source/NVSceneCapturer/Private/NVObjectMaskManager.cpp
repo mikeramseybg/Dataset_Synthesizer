@@ -412,14 +412,22 @@ void UNVObjectMaskMananger_VertexColor::ScanActors(UWorld* World)
 
         // Apply the mask to valid actors
         for (auto CheckActor : AllMaskActors)
-        {
-            if (CheckActor)
+        {			
+		    if (CheckActor)
             {
-                const uint32 ActorMaskId = GetMaskId(CheckActor);
-                if (ActorMaskId > 0)
-                {
-                    ApplyVertexColorMaskToActor(CheckActor, ActorMaskId);
-                }
+				//#miker: need to verify that it has an	annotationTagComp
+				// another bug that crashes the engine
+				// -> "NVCapturableActorTag")	UNVCapturableActorTag 
+				UNVCapturableActorTag* tag = Cast<UNVCapturableActorTag>(CheckActor->GetComponentByClass(UNVCapturableActorTag::StaticClass()));
+				if (tag)
+				{
+					//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: annotation tag"));
+					const uint32 ActorMaskId = GetMaskId(CheckActor);
+					if (ActorMaskId > 0)
+					{
+						ApplyVertexColorMaskToActor(CheckActor, ActorMaskId);
+					}
+				}
             }
         }
     }

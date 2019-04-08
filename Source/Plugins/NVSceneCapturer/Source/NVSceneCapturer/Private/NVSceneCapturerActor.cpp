@@ -71,7 +71,10 @@ void ANVSceneCapturerActor::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    CheckCaptureScene();
+	StartCapturing();
+
+	CheckCaptureScene();
+
 }
 
 void ANVSceneCapturerActor::UpdateSettingsFromCommandLine()
@@ -123,61 +126,87 @@ void ANVSceneCapturerActor::UpdateSettingsFromCommandLine()
     }
 }
 
+//#miker: effectively a poor mans lazy loading
+void ANVSceneCapturerActor::RepeatingFunction()
+{
+	if (--RepeatingCallsRemaining <= 0)
+	{
+		UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: RepeatingFunction ANVSceneCapturerActor"));
+		GetWorldTimerManager().ClearTimer(MemberTimerHandle);
+	}
+}
+
+//#miker:
+const float DELAYBEGINDELAYSCA = 2.0f;
+
 void ANVSceneCapturerActor::BeginPlay()
 {
     Super::BeginPlay();
+	//GetWorldTimerManager().SetTimer(MemberTimerHandle, this, &ANVSceneCapturerActor::RepeatingFunction, 1.0f, true, DELAYBEGINDELAYSCA);	
+	UpdateSettingsFromCommandLine();
 
-    UpdateSettingsFromCommandLine();
-
-    UWorld* World = GetWorld();
+	UWorld* World = GetWorld();
 #if WITH_EDITOR
-    bool bIsSimulating = GUnrealEd ? (GUnrealEd->bIsSimulatingInEditor || GUnrealEd->bIsSimulateInEditorQueued) : false;
-    if (!World || !World->IsGameWorld() || bIsSimulating)
-    {
-        return;
-    }
+	bool bIsSimulating = GUnrealEd ? (GUnrealEd->bIsSimulatingInEditor || GUnrealEd->bIsSimulateInEditorQueued) : false;
+	if (!World || !World->IsGameWorld() || bIsSimulating)
+	{
+		return;
+	}
 #endif
 
-    bTakingOverViewport = bTakeOverGameViewport;
-    if (bTakeOverGameViewport)
-    {
-        TakeOverViewport();
-    }
+	bTakingOverViewport = bTakeOverGameViewport;
+	if (bTakeOverGameViewport)
+	{
+		TakeOverViewport();
+	}
 
-    bNeedToExportScene = false;
-    bSkipFirstFrame = true;
+	bNeedToExportScene = false;
+	bSkipFirstFrame = true;
 
-    UpdateViewpointList();
+	UpdateViewpointList();
 
-    // Create the feature extractors for each viewpoint
-    for (UNVSceneCapturerViewpointComponent* CheckViewpointComp : ViewpointList)
-    {
-        if (CheckViewpointComp && CheckViewpointComp->IsEnabled())
-        {
-            CheckViewpointComp->SetupFeatureExtractors();
-        }
-    }
+	// Create the feature extractors for each viewpoint
+	for (UNVSceneCapturerViewpointComponent* CheckViewpointComp : ViewpointList)
+	{
+		if (CheckViewpointComp && CheckViewpointComp->IsEnabled())
+		{
+			CheckViewpointComp->SetupFeatureExtractors();
+		}
+	}
 
-    // bIsActive is public property for UI. so we need to copy to protected property
-    // to avoid access from user while we are captuering.
-    CurrentState = bIsActive? ENVSceneCapturerState::Active: ENVSceneCapturerState::NotActive;
-    if (bAutoStartCapturing && (CurrentState == ENVSceneCapturerState::Active))
-    {
-        // NOTE: We need to delay the capturing so the scene have time to set up
-        const float DelayDuration = 1.f;
-        GetWorldTimerManager().SetTimer(TimeHandle_StartCapturingDelay,
-                                        this,
-                                        &ANVSceneCapturerActor::StartCapturing,
-                                        DelayDuration,
-                                        false, 
-                                        DelayDuration);
-        StartCapturingDuration = 0;
-    }
+	// bIsActive is public property for UI. so we need to copy to protected property
+	// to avoid access from user while we are captuering.
+	CurrentState = bIsActive ? ENVSceneCapturerState::Active : ENVSceneCapturerState::NotActive;
+	if (bAutoStartCapturing && (CurrentState == ENVSceneCapturerState::Active))
+	{
+		// NOTE: We need to delay the capturing so the scene have time to set up
+		//#miker:
+		// scene capturing is now state driven via item drop controller
+		/*const float DelayDuration = 1.f;
+		GetWorldTimerManager().SetTimer(TimeHandle_StartCapturingDelay,
+			this,
+			&ANVSceneCapturerActor::StartCapturing,
+			DelayDuration,
+			false,
+			DelayDuration);
+			*/
+		StartCapturingDuration = 0;
+	}
 
-    if (SceneDataVisualizer)
-    {
-        SceneDataVisualizer->Init();
-    }
+	if (SceneDataVisualizer)
+	{
+		SceneDataVisualizer->Init();
+	}
+}
+
+//#miker:
+void ANVSceneCapturerActor::restartCaptureActor()
+{
+	UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: restartCaptureActor"));
+	m_BGCapturing = false;
+	StartCapturingDuration = 0;
+	BGNumberOfFramesToCapture = 1;
+	GetWorldTimerManager().ClearTimer(TimeHandle_StartCapturingDelay);
 }
 
 void ANVSceneCapturerActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -259,6 +288,7 @@ void ANVSceneCapturerActor::CheckCaptureScene()
     const bool bSceneIsReady = !ANVSceneManagerPtr || ANVSceneManagerPtr->GetState()== ENVSceneManagerState::Ready;
     UWorld* World = GetWorld();
     AGameModeBase* CurrentGameMode = World ? World->GetAuthGameMode() : nullptr;
+	ENVSceneManagerState state = ANVSceneManagerPtr->GetState();
 
     if (bNeedToExportScene && bSceneIsReady)
     {
@@ -271,9 +301,10 @@ void ANVSceneCapturerActor::CheckCaptureScene()
             }
             else
             {
-                CaptureSceneToPixelsData();
-                // Update the capturer settings at the end of the frame after we already captured data of this frame
-                UpdateCapturerSettings();
+				//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: writing pixels..."));					
+				CaptureSceneToPixelsData();					
+				// Update the capturer settings at the end of the frame after we already captured data of this frame
+				UpdateCapturerSettings();				
             }
         }
         if (!CanHandleMoreSceneData())
@@ -285,6 +316,18 @@ void ANVSceneCapturerActor::CheckCaptureScene()
             }
         }
     }
+
+	//#miker:
+	if (CurrentState == ENVSceneCapturerState::Completed)
+	{
+		/*
+		if (SceneDataHandler)
+        {
+            SceneDataHandler->OnCapturingCompleted();
+        }
+		*/
+
+	}
 }
 
 void ANVSceneCapturerActor::ResetCounter()
@@ -295,7 +338,8 @@ void ANVSceneCapturerActor::ResetCounter()
 void ANVSceneCapturerActor::CaptureSceneToPixelsData()
 {
     const int32 CurrentFrameIndex = CapturedFrameCounter.GetTotalFrameCount();
-
+	const int FrameIndexForFile = m_accumulatedFrameIndex; 	
+	//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: CaptureSceneToPixelsData %d"), FrameIndexForFile);
     bool bFinishedCapturing = (NumberOfFramesToCapture > 0) && (CurrentFrameIndex >= NumberOfFramesToCapture);
 
     const float CurrentTime = GetWorld()->GetTimeSeconds();
@@ -303,20 +347,20 @@ void ANVSceneCapturerActor::CaptureSceneToPixelsData()
 
     // Let all the child exporter components know it need to export the scene
     if (!bFinishedCapturing)
-    {
+    {		
         for (UNVSceneCapturerViewpointComponent* ViewpointComp : ViewpointList)
         {
             if (ViewpointComp && ViewpointComp->IsEnabled())
             {
-                ViewpointComp->CaptureSceneToPixelsData(
-                    [this, CurrentFrameIndex](const FNVTexturePixelData& CapturedPixelData, UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor, UNVSceneCapturerViewpointComponent* CapturedViewpoint)
+			    ViewpointComp->CaptureSceneToPixelsData(
+                    [this, FrameIndexForFile](const FNVTexturePixelData& CapturedPixelData, UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor, UNVSceneCapturerViewpointComponent* CapturedViewpoint)
                 {
                     if (SceneDataHandler)
                     {
                         SceneDataHandler->HandleScenePixelsData(CapturedPixelData,
                                                                 CapturedFeatureExtractor,
                                                                 CapturedViewpoint,
-                                                                CurrentFrameIndex);
+							FrameIndexForFile);
                     }
 
                     if (SceneDataVisualizer)
@@ -324,19 +368,19 @@ void ANVSceneCapturerActor::CaptureSceneToPixelsData()
                         SceneDataVisualizer->HandleScenePixelsData(CapturedPixelData,
                                 CapturedFeatureExtractor,
                                 CapturedViewpoint,
-                                CurrentFrameIndex);
+							FrameIndexForFile);
                     }
                 });
 
                 ViewpointComp->CaptureSceneAnnotationData(
-                    [this, CurrentFrameIndex](const TSharedPtr<FJsonObject>& CapturedData, UNVSceneFeatureExtractor_AnnotationData* CapturedFeatureExtractor, UNVSceneCapturerViewpointComponent* CapturedViewpoint)
+                    [this, FrameIndexForFile](const TSharedPtr<FJsonObject>& CapturedData, UNVSceneFeatureExtractor_AnnotationData* CapturedFeatureExtractor, UNVSceneCapturerViewpointComponent* CapturedViewpoint)
                 {
                     if (SceneDataHandler)
                     {
                         SceneDataHandler->HandleSceneAnnotationData(CapturedData,
                                 CapturedFeatureExtractor,
                                 CapturedViewpoint,
-                                CurrentFrameIndex);
+							FrameIndexForFile);
                     }
                 });
             }
@@ -363,7 +407,16 @@ void ANVSceneCapturerActor::CaptureSceneToPixelsData()
 
         if (bFinishedProcessingData)
         {
+			//#miker: update file index
             OnCompleted();
+			// use current frame counter to repurpose as a file index
+			m_currentFrameIndex = CurrentFrameIndex;
+			//rebase for use on upcoming frame
+			if (m_currentFrameIndex == m_lastFrameIndex)
+			{
+				++m_accumulatedFrameIndex;
+			}
+			m_lastFrameIndex = CurrentFrameIndex;
         }
     }
 
@@ -386,18 +439,21 @@ void ANVSceneCapturerActor::SetNumberOfFramesToCapture(int32 NewSceneCount)
 
 void ANVSceneCapturerActor::StartCapturing()
 {
+	//#miker: do NOT capture if the controller is still inserting objects into tote
+	if (!isBGControllerDone() || m_BGCapturing) { return; }
+	m_BGCapturing = true;
     bNeedToExportScene = false;
     bSkipFirstFrame = true;
     ANVSceneManager* ANVSceneManagerPtr = ANVSceneManager::GetANVSceneManagerPtr();
     // if ANVSceneManagerPtr is nullptr, then there's no scene manager and it's assumed the scene is static and thus ready, else check with the scene manager
-    const bool bSceneIsReady = !ANVSceneManagerPtr || ANVSceneManagerPtr->GetState() == ENVSceneManagerState::Ready;
+	const bool bSceneIsReady =  !ANVSceneManagerPtr || ANVSceneManagerPtr->GetState() == ENVSceneManagerState::Ready;
     if (bSceneIsReady)
     {
         StartCapturing_Internal();
-    }
+    }	
     else if (!TimeHandle_StartCapturingDelay.IsValid())
     {
-        const float DelayDuration = 1.f;
+        const float DelayDuration = 1.f; 
         // NOTE: We need to delay the capturing so the scene have time to set up
         GetWorldTimerManager().SetTimer(TimeHandle_StartCapturingDelay,
                                         this,
@@ -405,7 +461,7 @@ void ANVSceneCapturerActor::StartCapturing()
                                         DelayDuration,
                                         false,
                                         DelayDuration);
-
+		
         StartCapturingDuration += DelayDuration;
         if (StartCapturingDuration > MAX_StartCapturingDuration)
         {
@@ -417,8 +473,8 @@ void ANVSceneCapturerActor::StartCapturing()
     {
         UE_LOG(LogNVSceneCapturer, Error, TEXT("Capturing could not Start -- did you set up the Game Mode?"));
     }
+	
 }
-
 void ANVSceneCapturerActor::StartCapturing_Internal()
 {
     if (!bIsActive)
@@ -434,7 +490,7 @@ void ANVSceneCapturerActor::StartCapturing_Internal()
             UE_LOG(LogNVSceneCapturer, Error, TEXT("SceneCapturer SceneDataHandler is empty. Please select data handler in details panel."));
         }
         else
-        {
+        {			
             ANVSceneManager* NVSceneManagerPtr = ANVSceneManager::GetANVSceneManagerPtr();
             if (ensure(NVSceneManagerPtr))
             {
@@ -461,9 +517,10 @@ void ANVSceneCapturerActor::StartCapturing_Internal()
 
             // Let all the viewpoint component start capturing
             for (UNVSceneCapturerViewpointComponent* ViewpointComp : ViewpointList)
-            {
+           {
                 ViewpointComp->StartCapturing();
             }
+			
         }
     }
 }
@@ -522,10 +579,9 @@ void ANVSceneCapturerActor::OnCompleted()
         {
             ViewpointComp->StopCapturing();
         }
-
-        CurrentState = ENVSceneCapturerState::Completed;
-
-        if (SceneDataHandler)
+		
+        CurrentState = ENVSceneCapturerState::Completed; 
+		if (SceneDataHandler)
         {
             SceneDataHandler->OnCapturingCompleted();
         }
