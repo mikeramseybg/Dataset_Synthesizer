@@ -356,9 +356,6 @@ FNVImageExporter_Thread::~FNVImageExporter_Thread()
     Kill();
 }
 
-//#miker: where the actual exporting of the image takes place..well places 
-// in a queue for serialization
-
 bool FNVImageExporter_Thread::ExportImage(const FNVTexturePixelData& ExportPixelData, const FString& ExportFilePath, const ENVImageFormat ExportImageFormat/*= ENVImageFormat::PNG*/)
 {
     FNVImageExporterData NewImageExporterData = FNVImageExporterData(ExportPixelData, ExportFilePath, ExportImageFormat);

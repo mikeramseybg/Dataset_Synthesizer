@@ -122,6 +122,8 @@ void ANVSceneManager::BGControllerIsDoneDropping(bool state)
 void ANVSceneManager::RepeatingFunction()
 {
 	//#miker: effectively a poor mans lazy loading
+	// may need this delay for packaged builds
+
 	if (--RepeatingCallsRemaining <= 0)
 	{
 
@@ -131,8 +133,6 @@ void ANVSceneManager::RepeatingFunction()
 	}
 }
 
-
-//#miker:
 const float DELAYBEGINDELAYSM = 2.0f;
 
 void ANVSceneManager::BeginPlay()

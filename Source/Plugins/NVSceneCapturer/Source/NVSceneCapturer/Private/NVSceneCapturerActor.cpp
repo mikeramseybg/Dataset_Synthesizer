@@ -127,6 +127,7 @@ void ANVSceneCapturerActor::UpdateSettingsFromCommandLine()
 }
 
 //#miker: effectively a poor mans lazy loading
+// may need this delay for packaged builds
 void ANVSceneCapturerActor::RepeatingFunction()
 {
 	if (--RepeatingCallsRemaining <= 0)
