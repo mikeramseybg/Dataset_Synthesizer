@@ -208,7 +208,7 @@ public:
 	void restartCaptureActor();
 	int m_currentFrameIndex  = 0;
 	int m_lastFrameIndex  = -1;
-	int m_accumulatedFrameIndex = 0;
+	//int m_accumulatedFrameIndex = 0;
 	// used for sim exit per run in the capture actor
 	// this is reset after each sim cycle 
 	//int32 m_currentFrameIndex = 0;
@@ -217,9 +217,18 @@ public:
 	bool m_BGControllerReady = false;
 	bool m_BGCapturing = false;
 	int BGNumberOfFramesToCapture = 1;
-	void BGControllerIsDoneDropping(bool state) 
+	bool m_useBGTargetOverride = false;
+	FString m_simulationSave;
+
+	void setBGTargetFolderOverride(bool useBGTargetOverride, FString simulationSave)
+	{
+		m_useBGTargetOverride = useBGTargetOverride;
+		m_simulationSave = simulationSave;
+	}
+	void BGControllerIsCurrentlyDone(bool state, int sim_run) 
 	{
 		m_BGControllerReady = state;
+		m_overallFrameAccumulator = sim_run;
 	}
 
 	bool isBGControllerDone() 

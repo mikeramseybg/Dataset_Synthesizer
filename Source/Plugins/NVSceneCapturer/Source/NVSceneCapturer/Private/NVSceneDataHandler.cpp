@@ -74,6 +74,12 @@ bool UNVSceneDataExporter::HandleSceneAnnotationData(const TSharedPtr<FJsonObjec
     }
     return bResult;
 }
+//#miker:
+void UNVSceneDataExporter::setBGTargetFolderOverride(bool useBGTargetOverride, FString simulationSave)
+{
+	m_useBGTargetOverride = useBGTargetOverride;
+	m_simulationSave = simulationSave;
+}
 
 void UNVSceneDataExporter::OnStartCapturingSceneData()
 {
@@ -388,7 +394,15 @@ FString UNVSceneDataExporter::GetExportFilePath(UNVSceneFeatureExtractor* Captur
     }
     OutputFileName += FileExtension;
 
-    const FString ExportFilePath = FPaths::Combine(OutputFolderPath, OutputFileName);
+	FString ExportFilePath = FPaths::Combine(OutputFolderPath, OutputFileName);
+
+	//#miker: sim reconstruction step,
+	// target should NOT be the scene capturers folder
+	if (m_useBGTargetOverride)
+	{
+		ExportFilePath = FPaths::Combine(m_simulationSave, OutputFileName);
+	}
+    
     return ExportFilePath;
 }
 

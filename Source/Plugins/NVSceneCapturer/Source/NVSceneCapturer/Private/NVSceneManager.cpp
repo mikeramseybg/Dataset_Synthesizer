@@ -111,14 +111,22 @@ void ANVSceneManager::RestartSceneManager()
 	//m_simpleCapturer->restartCaptureActor();
 	
 }
-void ANVSceneManager::BGControllerIsDoneDropping(bool state)
+
+void ANVSceneManager::BGControllerIsCurrentlyDone(bool state, int sim_run)
 {
 	if (m_simpleCapturer)
 	{
-		m_simpleCapturer->BGControllerIsDoneDropping(state);
+		m_simpleCapturer->BGControllerIsCurrentlyDone(state, sim_run);
 	}
 }
 
+void ANVSceneManager::setBGTargetFolderOverride(bool useBGTargetOverride, FString simulationSave)
+{
+	if (m_simpleCapturer)
+	{
+		m_simpleCapturer->setBGTargetFolderOverride(useBGTargetOverride, simulationSave);
+	}
+}
 void ANVSceneManager::RepeatingFunction()
 {
 	//#miker: effectively a poor mans lazy loading

@@ -83,7 +83,13 @@ public:
 	ANVSceneCapturerActor* m_simpleCapturer = nullptr;
 	void RepeatingFunction();
 	void RestartSceneManager();
-	void BGControllerIsDoneDropping(bool state);
+	void BGControllerIsCurrentlyDone(bool state,int sim_run);
+
+	bool m_useBGTargetOverride = false;
+	FString m_simulationSave;
+
+	void setBGTargetFolderOverride(bool useBGTargetOverride, FString simulationSave);
+	
 
 protected:
     virtual void PreInitializeComponents() override;

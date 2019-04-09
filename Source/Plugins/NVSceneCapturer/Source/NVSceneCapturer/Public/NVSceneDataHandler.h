@@ -52,6 +52,10 @@ public:
     virtual void OnStartCapturingSceneData() PURE_VIRTUAL(UNVSceneDataHandler::OnStartCapturingSceneData, return; );
     virtual void OnStopCapturingSceneData() PURE_VIRTUAL(UNVSceneDataHandler::OnStopCapturingSceneData, return; );
     virtual void OnCapturingCompleted() PURE_VIRTUAL(UNVSceneDataHandler::OnCapturingCompleted, return; );
+
+	//#miker:
+	virtual void setBGTargetFolderOverride(bool useBGTargetOverride, FString SimulationSave) PURE_VIRTUAL(UNVSceneDataHandler::setBGTargetFolderOverride, return;);
+
 };
 
 //=================================== UNVSceneDataExporter ===================================
@@ -132,6 +136,11 @@ public:
                               UNVSceneCapturerViewpointComponent* CapturedViewpoint,
                               int32 FrameIndex,
                               const FString& FileExtension) const;
+public:
+	//#miker:
+	virtual void setBGTargetFolderOverride(bool useBGTargetOverride, FString SimulationSave) override;
+	bool m_useBGTargetOverride = false;
+	FString m_simulationSave;
 
 protected:
     void ExportCapturerSettings();

@@ -317,18 +317,6 @@ void ANVSceneCapturerActor::CheckCaptureScene()
             }
         }
     }
-
-	//#miker:
-	if (CurrentState == ENVSceneCapturerState::Completed)
-	{
-		/*
-		if (SceneDataHandler)
-        {
-            SceneDataHandler->OnCapturingCompleted();
-        }
-		*/
-
-	}
 }
 
 void ANVSceneCapturerActor::ResetCounter()
@@ -339,7 +327,7 @@ void ANVSceneCapturerActor::ResetCounter()
 void ANVSceneCapturerActor::CaptureSceneToPixelsData()
 {
     const int32 CurrentFrameIndex = CapturedFrameCounter.GetTotalFrameCount();
-	const int FrameIndexForFile = m_accumulatedFrameIndex; 	
+	const int FrameIndexForFile = m_overallFrameAccumulator;
 	//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: CaptureSceneToPixelsData %d"), FrameIndexForFile);
     bool bFinishedCapturing = (NumberOfFramesToCapture > 0) && (CurrentFrameIndex >= NumberOfFramesToCapture);
 
@@ -413,10 +401,10 @@ void ANVSceneCapturerActor::CaptureSceneToPixelsData()
 			// use current frame counter to repurpose as a file index
 			m_currentFrameIndex = CurrentFrameIndex;
 			//rebase for use on upcoming frame
-			if (m_currentFrameIndex == m_lastFrameIndex)
-			{
-				++m_accumulatedFrameIndex;
-			}
+			//if (m_currentFrameIndex == m_lastFrameIndex)
+			//{
+			//	++m_accumulatedFrameIndex;
+			//}
 			m_lastFrameIndex = CurrentFrameIndex;
         }
     }
@@ -503,6 +491,10 @@ void ANVSceneCapturerActor::StartCapturing_Internal()
             UpdateCapturerSettings();
 
             OnStartedEvent.Broadcast(this);
+
+			//#miker: update write folder overwrite and folder
+			SceneDataHandler->setBGTargetFolderOverride(m_useBGTargetOverride, m_simulationSave);
+
             SceneDataHandler->OnStartCapturingSceneData();
 
             GetWorldTimerManager().ClearTimer(TimeHandle_StartCapturingDelay);
