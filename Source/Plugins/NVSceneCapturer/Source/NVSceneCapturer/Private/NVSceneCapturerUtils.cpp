@@ -694,6 +694,12 @@ namespace NVSceneCapturerUtils
     {
         if (MeshOwnerActor)
         {
+			/*const FString& actorName = MeshOwnerActor->GetName();
+			GLog->Log(actorName);
+			if (!actorName.Contains(FString("BG"))) { return; }
+
+			UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: SetMeshVertexColor %s"), *MeshOwnerActor->GetName());
+			*/
             const FLinearColor& MeshVertexLinearColor = VertexColor.ReinterpretAsLinear();
 
             TArray<UStaticMeshComponent*> StaticMeshComps;
