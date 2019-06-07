@@ -381,7 +381,7 @@ void ANVSceneManager::OnCapturingCompleted(ANVSceneCapturerActor* SceneCapturer,
 
             if (IsAllSceneCaptured())
             {
-				UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: nvscenemanager::...scene captured in its entirety"));
+				//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: nvscenemanager::...scene captured in its entirety"));
 
                 SceneManagerState = ENVSceneManagerState::Captured;
                 if (bAutoExitAfterExportingComplete)

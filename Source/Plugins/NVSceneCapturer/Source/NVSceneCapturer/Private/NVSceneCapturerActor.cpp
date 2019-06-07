@@ -134,7 +134,7 @@ void ANVSceneCapturerActor::RepeatingFunction()
 {
 	if (--RepeatingCallsRemaining <= 0)
 	{
-		UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: RepeatingFunction ANVSceneCapturerActor"));
+		//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: RepeatingFunction ANVSceneCapturerActor"));
 		GetWorldTimerManager().ClearTimer(MemberTimerHandle);
 	}
 }
@@ -205,7 +205,7 @@ void ANVSceneCapturerActor::BeginPlay()
 //#miker:
 void ANVSceneCapturerActor::restartCaptureActor()
 {
-	UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: restartCaptureActor"));
+	//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: restartCaptureActor"));
 	m_BGCapturing = false;
 	StartCapturingDuration = 0;
 	BGNumberOfFramesToCapture = 1;
