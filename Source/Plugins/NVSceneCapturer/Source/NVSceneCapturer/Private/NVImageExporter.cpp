@@ -425,7 +425,7 @@ void FNVImageExporter_Thread::Stop()
         // Trigger the event so the thread doesn't wait anymore
         HavePendingImageEvent->Trigger();
 		//#miker:
-        //HavePendingImageEvent->Reset();
+        HavePendingImageEvent->Reset();
     }
 }
 

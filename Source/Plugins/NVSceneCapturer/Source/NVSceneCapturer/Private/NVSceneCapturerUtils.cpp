@@ -498,7 +498,10 @@ namespace NVSceneCapturerUtils
                 }
             }
         }
-
+		/*
+		#miker: moved static mesh component fix up logic into totesim since it's handling
+		the dynamics of component creation
+		*/
         return ValidMeshComp;
     }
 

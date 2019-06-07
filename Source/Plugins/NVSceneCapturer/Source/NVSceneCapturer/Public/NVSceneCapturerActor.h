@@ -212,8 +212,11 @@ public:
 	// used for sim exit per run in the capture actor
 	// this is reset after each sim cycle 
 	//int32 m_currentFrameIndex = 0;
-	// used to control the overall sim iteration count
+
+	// used to control the overall sim iteration count, e.g. 00000.00001
+	// baseset.pickset
 	int32 m_overallFrameAccumulator = 0;
+	int32 m_picksetFrameAccumulator = 0;
 	bool m_BGControllerReady = false;
 	bool m_BGCapturing = false;
 	int BGNumberOfFramesToCapture = 1;
@@ -225,10 +228,11 @@ public:
 		m_useBGTargetOverride = useBGTargetOverride;
 		m_simulationSave = simulationSave;
 	}
-	void BGControllerIsCurrentlyDone(bool state, int sim_run) 
+	void BGControllerIsCurrentlyDone(bool state, int sim_run, int pickset_run) 
 	{
 		m_BGControllerReady = state;
 		m_overallFrameAccumulator = sim_run;
+		m_picksetFrameAccumulator = pickset_run;
 	}
 
 	bool isBGControllerDone() 

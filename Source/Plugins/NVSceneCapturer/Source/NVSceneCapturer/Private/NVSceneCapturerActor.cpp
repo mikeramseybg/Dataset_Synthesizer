@@ -20,6 +20,8 @@
 #include "Editor/UnrealEdEngine.h"
 #endif // WITH_EDITOR
 
+//debug defines
+//#define BGDEBUG_CAPTURESCENE_FILE
 const float MAX_StartCapturingDuration = 5.0f; // max duration to wait for ANVSceneCapturerActor::StartCapturing to successfully begin capturing before emitting warning messages
 
 ANVSceneCapturerActor::ANVSceneCapturerActor(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -328,7 +330,10 @@ void ANVSceneCapturerActor::CaptureSceneToPixelsData()
 {
     const int32 CurrentFrameIndex = CapturedFrameCounter.GetTotalFrameCount();
 	const int FrameIndexForFile = m_overallFrameAccumulator;
-	//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: CaptureSceneToPixelsData %d"), FrameIndexForFile);
+	const int FramePicksetForFile = m_picksetFrameAccumulator;
+#ifdef BGDEBUG_CAPTURESCENE_FILE
+	UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: CaptureSceneToPixelsData %d.%d"), FrameIndexForFile, FramePicksetForFile);
+#endif
     bool bFinishedCapturing = (NumberOfFramesToCapture > 0) && (CurrentFrameIndex >= NumberOfFramesToCapture);
 
     const float CurrentTime = GetWorld()->GetTimeSeconds();
@@ -342,14 +347,14 @@ void ANVSceneCapturerActor::CaptureSceneToPixelsData()
             if (ViewpointComp && ViewpointComp->IsEnabled())
             {
 			    ViewpointComp->CaptureSceneToPixelsData(
-                    [this, FrameIndexForFile](const FNVTexturePixelData& CapturedPixelData, UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor, UNVSceneCapturerViewpointComponent* CapturedViewpoint)
+                    [this, FrameIndexForFile,FramePicksetForFile](const FNVTexturePixelData& CapturedPixelData, UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor, UNVSceneCapturerViewpointComponent* CapturedViewpoint)
                 {
                     if (SceneDataHandler)
                     {
                         SceneDataHandler->HandleScenePixelsData(CapturedPixelData,
                                                                 CapturedFeatureExtractor,
                                                                 CapturedViewpoint,
-							FrameIndexForFile);
+							FrameIndexForFile,FramePicksetForFile);
                     }
 
                     if (SceneDataVisualizer)
@@ -357,19 +362,19 @@ void ANVSceneCapturerActor::CaptureSceneToPixelsData()
                         SceneDataVisualizer->HandleScenePixelsData(CapturedPixelData,
                                 CapturedFeatureExtractor,
                                 CapturedViewpoint,
-							FrameIndexForFile);
+							FrameIndexForFile, FramePicksetForFile);
                     }
                 });
 
                 ViewpointComp->CaptureSceneAnnotationData(
-                    [this, FrameIndexForFile](const TSharedPtr<FJsonObject>& CapturedData, UNVSceneFeatureExtractor_AnnotationData* CapturedFeatureExtractor, UNVSceneCapturerViewpointComponent* CapturedViewpoint)
+                    [this, FrameIndexForFile, FramePicksetForFile](const TSharedPtr<FJsonObject>& CapturedData, UNVSceneFeatureExtractor_AnnotationData* CapturedFeatureExtractor, UNVSceneCapturerViewpointComponent* CapturedViewpoint)
                 {
                     if (SceneDataHandler)
                     {
                         SceneDataHandler->HandleSceneAnnotationData(CapturedData,
                                 CapturedFeatureExtractor,
                                 CapturedViewpoint,
-							FrameIndexForFile);
+							FrameIndexForFile, FramePicksetForFile);
                     }
                 });
             }
