@@ -268,7 +268,7 @@ void ANVSceneManager::SetupScene()
         SetupSceneInternal();
 
         // After the scene setup is done then start applying class and instance segmentation marks
-		// miker:
+		// #miker:
         UpdateSegmentationMask();
 
         // TODO: Broadcast Ready event
@@ -295,12 +295,30 @@ void ANVSceneManager::SetupSceneInternal()
     }
 }
 
-void ANVSceneManager::UpdateSegmentationMask()
+
+//#miker: stencil_strategy
+/*
+ the issue is that the object segmentation scan actors changes the actors
+ depth value before the image can be written out
+
+*/
+void ANVSceneManager::UpdateSegmentationMaskMike(int stencil_strategy)
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		ObjectClassSegmentation.ScanActors(World, stencil_strategy);
+	}
+}
+
+
+//#miker: stencil_strategy
+void ANVSceneManager::UpdateSegmentationMask(int stencil_strategy)
 {
     UWorld* World = GetWorld();
     if (World)
     {
-        ObjectClassSegmentation.ScanActors(World);
+		ObjectClassSegmentation.ScanActors(World);
 
         bool bNeedInstanceSegmentation = false;
         for (ANVSceneCapturerActor* CheckCapturer : SceneCapturers)
@@ -381,7 +399,7 @@ void ANVSceneManager::OnCapturingCompleted(ANVSceneCapturerActor* SceneCapturer,
 
             if (IsAllSceneCaptured())
             {
-				//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: nvscenemanager::...scene captured in its entirety"));
+				UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: nvscenemanager::...scene captured in its entirety"));
 
                 SceneManagerState = ENVSceneManagerState::Captured;
                 if (bAutoExitAfterExportingComplete)

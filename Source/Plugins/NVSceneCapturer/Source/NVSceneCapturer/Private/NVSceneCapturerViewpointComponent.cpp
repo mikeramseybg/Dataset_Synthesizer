@@ -9,6 +9,8 @@
 #include "NVSceneCapturerViewpointComponent.h"
 #include "NVSceneFeatureExtractor.h"
 #include "NVSceneCapturerActor.h"
+#include "NVSceneManager.h"
+
 #include "UObject/ConstructorHelpers.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -44,12 +46,41 @@ void UNVSceneCapturerViewpointComponent::SetupFeatureExtractors()
         {
             UClass* ExtractorClass = FeatureExtractor->GetClass();
             FName NewExtractorName = MakeUniqueObjectName(this, ExtractorClass, *FeatureExtractor->GetDisplayName());
+			
             UNVSceneFeatureExtractor* NewSubFeatureExtractor = NewObject<UNVSceneFeatureExtractor>(GetOwner(),
                     ExtractorClass, NewExtractorName, EObjectFlags::RF_Transient, FeatureExtractor);
             if (NewSubFeatureExtractor)
             {
                 NewSubFeatureExtractor->Init(this);
             }
+
+			//#miker:
+			//NewExtractorName = 0x000002635ac16328 "Class Segmentation"_0
+			/*
+			FString ex_name = NewExtractorName.GetPlainNameString();
+			if (ex_name.Contains("Class Segmentation"))
+			{
+				//create new feature extractor that generates a mask that
+				// is used to generate a mask for extraction of only the 
+				// objects from the rgb image that will be composited onto
+				// a realworld tote image
+				int a = 0;
+				++a;
+
+				UClass* ExtractorClass = FeatureExtractor->GetClass();
+				FName NewExtractorName = MakeUniqueObjectName(this, ExtractorClass, *FeatureExtractor->GetDisplayName());
+				FString ex_name = NewExtractorName.GetPlainNameString();
+				const FString mike_template = TEXT("_BGT");
+				ex_name.Append(mike_template);
+				FName modified_name = *ex_name;
+				UNVSceneFeatureExtractor* NewSubFeatureExtractor = NewObject<UNVSceneFeatureExtractor>(GetOwner(),
+					ExtractorClass, modified_name, EObjectFlags::RF_Transient, FeatureExtractor);
+				if (NewSubFeatureExtractor)
+				{
+					NewSubFeatureExtractor->Init(this);
+				}
+			}
+			*/
         }
     }
 }
@@ -119,6 +150,20 @@ bool UNVSceneCapturerViewpointComponent::CaptureSceneToPixelsData(UNVSceneCaptur
         bResults = true;
         for (auto SceneFeatureExtractor : FeatureExtractorList)
         {
+			//#miker: rescan world, targeting for template creation
+			//#miker: stencil strategy
+			/*
+			const FString& actor_name = SceneFeatureExtractor->GetName();
+			ANVSceneManager* NVSceneManagerPtr = ANVSceneManager::GetANVSceneManagerPtr();
+			if (actor_name.Contains("Class Segmentation_BGT"))
+			{
+				if (ensure(NVSceneManagerPtr))
+				{
+					// Make sure the segmentation mask of objects in the scene are up-to-date before capturing them
+					NVSceneManagerPtr->UpdateSegmentationMaskMike(1);
+				}
+			}
+			*/
             UNVSceneFeatureExtractor_PixelData* FeatureExtractorScenePixels = Cast<UNVSceneFeatureExtractor_PixelData>(SceneFeatureExtractor);
             if (FeatureExtractorScenePixels)
             {
@@ -128,6 +173,7 @@ bool UNVSceneCapturerViewpointComponent::CaptureSceneToPixelsData(UNVSceneCaptur
                     Callback(CapturedPixelData, CapturedFeatureExtractor, this);
                 });
             }
+			
         }
     }
 

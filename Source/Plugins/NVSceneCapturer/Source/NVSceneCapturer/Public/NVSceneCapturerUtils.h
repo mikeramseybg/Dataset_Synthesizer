@@ -220,6 +220,11 @@ public:    // Properties
     UPROPERTY()
     uint32 instance_id;
 
+	/// #miker: dumb dump of instanceid converted into rgb
+	UPROPERTY()
+	TArray<uint8> rgba;
+
+
     UPROPERTY(Transient)
     float truncated;
 

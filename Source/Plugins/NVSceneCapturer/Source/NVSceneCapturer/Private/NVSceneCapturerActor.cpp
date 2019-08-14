@@ -20,6 +20,7 @@
 #include "Editor/UnrealEdEngine.h"
 #endif // WITH_EDITOR
 
+//#miker:
 //debug defines
 //#define BGDEBUG_CAPTURESCENE_FILE
 const float MAX_StartCapturingDuration = 5.0f; // max duration to wait for ANVSceneCapturerActor::StartCapturing to successfully begin capturing before emitting warning messages

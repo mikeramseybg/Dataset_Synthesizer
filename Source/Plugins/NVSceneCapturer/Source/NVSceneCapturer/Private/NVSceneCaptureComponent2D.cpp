@@ -6,6 +6,8 @@
 
 #include "NVSceneCapturerModule.h"
 #include "NVSceneCaptureComponent2D.h"
+
+#include "NVSceneManager.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Engine.h"
 
@@ -254,7 +256,7 @@ void UNVSceneCaptureComponent2D::CaptureSceneToPixelsData(UNVSceneCaptureCompone
     }
     else
     {
-        CaptureSceneDeferred();
+		CaptureSceneDeferred();
         ReadPixelsDataFromTexture(Callback);
     }
 }

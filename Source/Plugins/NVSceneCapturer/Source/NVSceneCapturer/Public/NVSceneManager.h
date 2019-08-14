@@ -69,7 +69,10 @@ public:
 
     /// Update the segmentation masks for all the objects in the scene.
     /// NOTE: This function should be called when the number of objects in the scene changed
-    void UpdateSegmentationMask();
+	//#miker: support for rebuilding ids 
+	//#miker: stencil_strategy
+	void UpdateSegmentationMaskMike(int stencil_strategy = 0);
+    void UpdateSegmentationMask(int stencil_strategy = 0);
 
 	UPROPERTY(EditAnywhere, Category = CapturerScene)
 	FNVObjectSegmentation_Class ObjectClassSegmentation;

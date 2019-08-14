@@ -188,12 +188,16 @@ bool FNVTextureReader::ReadPixelsRaw(const FTexture2DRHIRef& NewSourceTexture, c
     else
     {
         static const FName RendererModuleName("Renderer");
-        // Load the renderer module on the main thread, as the module manager is not thread-safe, and copy the ptr into the render command, along with 'this' (which is protected by BlockUntilAvailable in ~FViewportSurfaceReader())
+        // Load the renderer module on the main thread, as the module manager is not thread-safe, 
+        //and copy the ptr into the render command, along with 'this' (which is protected by
+        // BlockUntilAvailable in ~FViewportSurfaceReader())
         IRendererModule* RendererModule = &FModuleManager::GetModuleChecked<IRendererModule>(RendererModuleName);
         check(RendererModule);
 
-        // NOTE: This approach almost identical to function FViewportSurfaceReader::ResolveRenderTarget in FrameGrabber.cpp
-        // The main different is we reading the pixels back from a render target instead of a viewport
+        // NOTE: This approach almost identical to function FViewportSurfaceReader::ResolveRenderTarget
+        // in FrameGrabber.cpp
+        // The main different is we reading the pixels back from a render target instead
+        // of a viewport
         auto RenderCommand = [=](FRHICommandListImmediate& RHICmdList)
         {
             FRHIResourceCreateInfo CreateInfo(FClearValueBinding::None);

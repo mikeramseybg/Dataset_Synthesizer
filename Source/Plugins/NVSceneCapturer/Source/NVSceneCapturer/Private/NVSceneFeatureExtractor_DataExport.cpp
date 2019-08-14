@@ -181,9 +181,19 @@ bool UNVSceneFeatureExtractor_AnnotationData::GatherActorData(const AActor* Chec
         ActorData.Name = ObjectName;
         ActorData.Class = Tag ? Tag->Tag : ObjectName;
         ANVSceneManager* NVSceneManagerPtr = ANVSceneManager::GetANVSceneManagerPtr();
+
+		for (int i = 0; i < 4; ++i)
+			ActorData.rgba.Add(0);
+
+		//#miker:
         if (NVSceneManagerPtr)
         {
             ActorData.instance_id = NVSceneManagerPtr->ObjectInstanceSegmentation.GetInstanceId(CheckActor);
+			const FColor& MaskVertexColor = NVSceneCapturerUtils::ConvertInt32ToVertexColor(ActorData.instance_id);
+			ActorData.rgba[0] = MaskVertexColor.R;
+			ActorData.rgba[1] = MaskVertexColor.G;
+			ActorData.rgba[2] = MaskVertexColor.B;
+			ActorData.rgba[3] = MaskVertexColor.A;
         }
         else
         {

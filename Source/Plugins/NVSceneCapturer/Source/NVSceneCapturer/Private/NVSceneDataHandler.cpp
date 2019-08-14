@@ -4,6 +4,7 @@
 * International License.  (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode)
 */
 
+
 #include "NVSceneCapturerModule.h"
 #include "NVSceneCapturerUtils.h"
 #include "NVSceneDataHandler.h"
@@ -20,6 +21,7 @@
 #include "UnrealEdGlobals.h"
 #include "Editor/UnrealEdEngine.h"
 #endif
+
 
 //================================== UNVSceneDataExporter ==================================//
 DEFINE_LOG_CATEGORY(LogNVSceneDataHandler);
@@ -58,6 +60,23 @@ bool UNVSceneDataExporter::HandleScenePixelsData(const FNVTexturePixelData& Capt
         ImageExporterThread->ExportImage(CapturedPixelData, NewExportFilePath, ExportImageFormat);
         bResult = true;
     }
+
+
+	//#miker: test for dds loading
+	/*
+
+	FD3D11Texture2D* src_texture = new FD3D11Texture2D();
+
+	{
+		FString actual_dest_file = dest_file +
+			//FString::FormatAsNumber(m_global_count) + 
+			TEXT(".dds");
+
+		HRESULT what2 = D3DX11SaveTextureToFile(Direct3DDeviceIMContext,
+			src_texture->GetResource(),
+			D3DX11_IMAGE_FILE_FORMAT::D3DX11_IFF_DDS, *actual_dest_file);
+	}
+	*/
     return bResult;
 }
 
@@ -224,8 +243,8 @@ void UNVSceneDataExporter::ExportCapturerSettings()
                             MatY = -MatY;
                             ExportActorData.fixed_model_transform.SetAxes(nullptr, &MatY, nullptr);
 
-					        ExportActorData.segmentation_class_id = SceneManager ? SceneManager->ObjectClassSegmentation.GetInstanceId(CheckActor) : 0;
-					        ExportActorData.segmentation_instance_id = SceneManager ? SceneManager->ObjectInstanceSegmentation.GetInstanceId(CheckActor) : 0;
+							ExportActorData.segmentation_class_id =  SceneManager ? SceneManager->ObjectClassSegmentation.GetInstanceId(CheckActor) : 0;
+							ExportActorData.segmentation_instance_id =  SceneManager ? SceneManager->ObjectInstanceSegmentation.GetInstanceId(CheckActor) : 0;
 
                             SettingExportData.ExportedObjects.Add(ExportActorData);
                             SceneAnnotatedActorData.exported_objects.Add(ExportActorData);
@@ -392,7 +411,18 @@ FString UNVSceneDataExporter::GetExportFilePath(UNVSceneFeatureExtractor* Captur
     }
     if (!CapturedFeatureExtractor->ExportFileNamePostfix.IsEmpty())
     {
-        OutputFileName += TEXT(".") + CapturedFeatureExtractor->ExportFileNamePostfix;
+
+		//#miker: stencil strategy file ext override
+		// since i'm just cannabilizing the class segment extractor
+		const FString& actor_name = CapturedFeatureExtractor->GetName();
+		if (actor_name.Contains("Class Segmentation_BGT"))
+		{
+			OutputFileName += TEXT(".st");
+		}
+		else
+		{
+			OutputFileName += TEXT(".") + CapturedFeatureExtractor->ExportFileNamePostfix;
+		}
     }
     OutputFileName += FileExtension;
 

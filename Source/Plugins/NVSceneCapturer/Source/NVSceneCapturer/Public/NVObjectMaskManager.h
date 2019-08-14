@@ -71,8 +71,8 @@ class NVSCENECAPTURER_API UNVObjectMaskMananger : public UObject
 
 public:
     UNVObjectMaskMananger();
-
-    virtual void ScanActors(UWorld* World);
+	//#miker: stencil_strategy
+    virtual void ScanActors(UWorld* World, int stencil_strategy=0);
 
 	void Init(ENVActorMaskNameType NewMaskNameType, ENVIdAssignmentType NewIdAssignmentType);
 
@@ -113,8 +113,8 @@ class NVSCENECAPTURER_API UNVObjectMaskMananger_Stencil : public UNVObjectMaskMa
 
 public:
     UNVObjectMaskMananger_Stencil();
-
-    void ScanActors(UWorld* World) override;
+	//#miker: stencil_strategy
+    void ScanActors(UWorld* World, int stencil_strategy=0) override;
 
     uint8 GetMaskId(const FString& MaskName) const;
     uint8 GetMaskId(const AActor* CheckActor) const;
@@ -134,8 +134,8 @@ class NVSCENECAPTURER_API UNVObjectMaskMananger_VertexColor: public UNVObjectMas
 	
 public:
     UNVObjectMaskMananger_VertexColor();
-
-    void ScanActors(UWorld* World) override;
+	//#miker: stencil_strategy
+    void ScanActors(UWorld* World, int stencil_strategy=0) override;
 
     uint32 GetMaskId(const FString& MaskName) const;
     uint32 GetMaskId(const AActor* CheckActor) const;
@@ -157,7 +157,8 @@ public:
 
 	uint32 GetInstanceId(const AActor* CheckActor) const;
 	void Init(UObject* OwnerObject);
-	void ScanActors(UWorld* World);
+	//#miker: stencil_strategy
+	void ScanActors(UWorld* World, int stencil_strategy = 0);
 
 protected:
 // Editor properties
@@ -201,7 +202,8 @@ public:
 
 	uint8 GetInstanceId(const AActor* CheckActor) const;
 	void Init(UObject* OwnerObject);
-	void ScanActors(UWorld* World);
+	//#miker: stencil_strategy
+	void ScanActors(UWorld* World, int stencil_strategy=0);
 
 protected:
 // Editor properties
