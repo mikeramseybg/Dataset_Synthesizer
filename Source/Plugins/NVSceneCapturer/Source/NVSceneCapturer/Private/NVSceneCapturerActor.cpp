@@ -210,6 +210,15 @@ void ANVSceneCapturerActor::restartCaptureActor()
 	m_BGCapturing = false;
 	StartCapturingDuration = 0;
 	BGNumberOfFramesToCapture = 1;
+
+	// #miker: clear out timing data
+	// otherwise there is accumulation when conducting multiple
+	// sim runs within a single "play" session
+	//
+	CapturedDuration = 0.f;
+	StartCapturingDuration = 0.0f;
+	StartCapturingTimestamp = 0.f;
+
 	GetWorldTimerManager().ClearTimer(TimeHandle_StartCapturingDelay);
 }
 

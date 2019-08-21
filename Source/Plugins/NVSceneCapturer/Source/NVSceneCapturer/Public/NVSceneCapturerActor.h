@@ -233,6 +233,7 @@ public:
 		m_BGControllerReady = state;
 		m_overallFrameAccumulator = sim_run;
 		m_picksetFrameAccumulator = pickset_run;
+
 	}
 
 	bool isBGControllerDone() 
