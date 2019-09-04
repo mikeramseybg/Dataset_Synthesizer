@@ -80,13 +80,24 @@ public:
 	UPROPERTY(EditAnywhere, Category = CapturerScene)
 	FNVObjectSegmentation_Instance ObjectInstanceSegmentation;
 
+	//#miker: this object instance segmentation assigns all but the
+	// targeted actor the same mask id
+	UPROPERTY(EditAnywhere, Category = CapturerScene)
+	FNVObjectSegmentation_Instance ObjectInstanceSegmentation_targeted;
+
 	//#miker: bg block
 	FTimerHandle MemberTimerHandle;
 	int RepeatingCallsRemaining = 1;
+	AActor* m_simItem = nullptr;
 	ANVSceneCapturerActor* m_simpleCapturer = nullptr;
 	void RepeatingFunction();
 	void RestartSceneManager();
 	void BGControllerIsCurrentlyDone(bool state,int sim_run, int pickset_run);
+	// individual instance image generation
+	// in addition to scene as a whole
+	void storeBGSimItemActor(AActor* sim_item);
+	void resetBGSimItemActor();
+	AActor* getSimActor() { return m_simItem; }
 
 	bool m_useBGTargetOverride = false;
 	FString m_simulationSave;

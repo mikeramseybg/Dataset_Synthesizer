@@ -126,6 +126,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Exporter")
     FString GetFullOutputDirectoryPath() const;
 
+
+	UFUNCTION(BlueprintCallable, Category = "Exporter")
+	FString prep_shit() const;
+
     UFUNCTION(BlueprintCallable, Category = "Exporter")
     virtual FString GetSubFolderName() const;
     UFUNCTION(BlueprintCallable, Category = "Exporter")

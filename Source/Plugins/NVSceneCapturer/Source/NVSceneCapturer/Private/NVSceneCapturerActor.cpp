@@ -314,7 +314,7 @@ void ANVSceneCapturerActor::CheckCaptureScene()
             }
             else
             {
-				//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: writing pixels..."));					
+				UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: writing pixels..."));					
 				CaptureSceneToPixelsData();					
 				// Update the capturer settings at the end of the frame after we already captured data of this frame
 				UpdateCapturerSettings();				
@@ -727,4 +727,16 @@ void ANVSceneCapturerActor::UpdateViewpointList()
 bool ANVSceneCapturerActor::CanHandleMoreSceneData() const
 {
     return (SceneDataHandler && SceneDataHandler->CanHandleMoreData());
+}
+
+
+void ANVSceneCapturerActor::storeBGSimItemActor(AActor* sim_item)
+{
+	UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: storeBGSimItemActor %s"), *(sim_item->GetName()));
+	m_simItem = sim_item;
+}
+
+void ANVSceneCapturerActor::resetBGSimItemActor()
+{
+	m_simItem = nullptr;
 }

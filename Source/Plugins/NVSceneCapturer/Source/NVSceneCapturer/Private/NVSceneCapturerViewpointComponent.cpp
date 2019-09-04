@@ -35,6 +35,11 @@ UNVSceneCapturerViewpointComponent::UNVSceneCapturerViewpointComponent(const FOb
     bAutoActivate = true;
 }
 
+/*
+
+#miker: stencil_strategy
+setups the feature extractors, e.g instance, class
+*/
 void UNVSceneCapturerViewpointComponent::SetupFeatureExtractors()
 {
     UpdateCapturerSettings();
@@ -55,10 +60,11 @@ void UNVSceneCapturerViewpointComponent::SetupFeatureExtractors()
             }
 
 			//#miker:
+			//#miker: stencil_strategy
 			//NewExtractorName = 0x000002635ac16328 "Class Segmentation"_0
-			/*
+			
 			FString ex_name = NewExtractorName.GetPlainNameString();
-			if (ex_name.Contains("Class Segmentation"))
+			if (ex_name.Contains("Instance Segmentation"))
 			{
 				//create new feature extractor that generates a mask that
 				// is used to generate a mask for extraction of only the 
@@ -80,7 +86,7 @@ void UNVSceneCapturerViewpointComponent::SetupFeatureExtractors()
 					NewSubFeatureExtractor->Init(this);
 				}
 			}
-			*/
+			
         }
     }
 }
@@ -136,7 +142,15 @@ FString UNVSceneCapturerViewpointComponent::GetDisplayName() const
     return (Settings.DisplayName.IsEmpty() ? GetName() : Settings.DisplayName);
 }
 
+//#miker: 
+/*
+Callback function called after the scene capture component finished capturing scene and read back its pixels data
+FNVTexturePixelData - The struct contain the captured scene's pixels data
+UNVSceneFeatureExtractor_PixelData* - Reference to the feature extractor that captured the scene pixels data
+UNVSceneCapturerViewpointComponent* - Reference to the viewpoint that captured the scene pixels data
+*/
 bool UNVSceneCapturerViewpointComponent::CaptureSceneToPixelsData(UNVSceneCapturerViewpointComponent::OnFinishedCaptureScenePixelsDataCallback ViewpointCallback)
+
 {
     bool bResults = false;
 
@@ -168,7 +182,8 @@ bool UNVSceneCapturerViewpointComponent::CaptureSceneToPixelsData(UNVSceneCaptur
             if (FeatureExtractorScenePixels)
             {
                 bResults = bResults && FeatureExtractorScenePixels->CaptureSceneToPixelsData(
-                               [this, Callback = ViewpointCallback](const FNVTexturePixelData& CapturedPixelData, UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor)
+                               [this, Callback = ViewpointCallback](const FNVTexturePixelData& CapturedPixelData,
+								   UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor)
                 {
                     Callback(CapturedPixelData, CapturedFeatureExtractor, this);
                 });

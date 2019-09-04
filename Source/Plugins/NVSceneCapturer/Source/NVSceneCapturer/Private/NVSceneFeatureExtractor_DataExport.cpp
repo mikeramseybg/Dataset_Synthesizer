@@ -377,7 +377,11 @@ bool UNVSceneFeatureExtractor_AnnotationData::GatherActorData(const AActor* Chec
                             // If the trace hit other actor instead the target one then it mean it's occluded
                             if (TraceHitResult.Actor.IsValid() && (TraceHitResult.Actor != CheckActor))
                             {
-                                OccludedCellCount++;
+								const FString& name = TraceHitResult.Actor->GetName();
+								if (!name.Contains("prep")) //#miker: generalize for all totes.
+								{
+									OccludedCellCount++;
+								}
                             }
 
                             // No need to go deeper when we already hit something

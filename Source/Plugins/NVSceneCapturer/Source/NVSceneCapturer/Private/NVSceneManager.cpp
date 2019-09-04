@@ -112,6 +112,24 @@ void ANVSceneManager::RestartSceneManager()
 	
 }
 
+void ANVSceneManager::storeBGSimItemActor(AActor* sim_item)
+{
+	UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: store bg sim actor"));
+	if (sim_item == nullptr)
+	{
+		UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: sim actor is null!!!!!!!!"));
+	}
+
+	m_simItem = sim_item;
+	m_simpleCapturer->storeBGSimItemActor(m_simItem);
+}
+
+void ANVSceneManager::resetBGSimItemActor()
+{
+	UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: reset bg sim actor"));
+	m_simItem = nullptr;
+}
+
 void ANVSceneManager::BGControllerIsCurrentlyDone(bool state, int sim_run, int pickset_run)
 {
 	if (m_simpleCapturer)
@@ -191,7 +209,7 @@ void ANVSceneManager::BeginPlay()
 
 			ObjectClassSegmentation.Init(this);
 			ObjectInstanceSegmentation.Init(this);
-
+			ObjectInstanceSegmentation_targeted.Init(this);
 			if (bCaptureAtAllMarkers)
 			{
 				CurrentMarkerIndex = -1;
@@ -328,7 +346,8 @@ void ANVSceneManager::UpdateSegmentationMask(int stencil_strategy)
                 for (const auto& CheckFeatureExtractor : CheckCapturer->FeatureExtractorSettings)
                 {
                     UNVSceneFeatureExtractor* CheckFeatureExtractorRef = CheckFeatureExtractor.FeatureExtractorRef;
-                    if (CheckFeatureExtractorRef && CheckFeatureExtractorRef->IsEnabled() && CheckFeatureExtractorRef->IsA(UNVSceneFeatureExtractor_VertexColorMask::StaticClass()))
+                    if (CheckFeatureExtractorRef && CheckFeatureExtractorRef->IsEnabled() && 
+						CheckFeatureExtractorRef->IsA(UNVSceneFeatureExtractor_VertexColorMask::StaticClass()))
                     {
                         bNeedInstanceSegmentation = true;
                         break;
@@ -339,7 +358,8 @@ void ANVSceneManager::UpdateSegmentationMask(int stencil_strategy)
         // Only update the objects' instance segmentation if it need to be captured
         if (bNeedInstanceSegmentation)
         {
-            ObjectInstanceSegmentation.ScanActors(World);
+			ObjectInstanceSegmentation.ScanActors(World);// , 0, m_simItem);
+			ObjectInstanceSegmentation_targeted.ScanActors(World,0,m_simItem);
         }
     }
 }

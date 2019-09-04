@@ -49,7 +49,11 @@ bool UNVSceneDataExporter::IsHandlingData() const
     return ImageExporterThread && ImageExporterThread->IsExportingImage();
 }
 
-bool UNVSceneDataExporter::HandleScenePixelsData(const FNVTexturePixelData& CapturedPixelData, UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor, UNVSceneCapturerViewpointComponent* CapturedViewpoint, int32 FrameIndex, int32 PicksetIndex)
+//#miker: export to png
+bool UNVSceneDataExporter::HandleScenePixelsData(const FNVTexturePixelData& CapturedPixelData, 
+	UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor, 
+	UNVSceneCapturerViewpointComponent* CapturedViewpoint,
+	int32 FrameIndex, int32 PicksetIndex)
 {
     bool bResult = false;
     if (ImageExporterThread && CapturedFeatureExtractor && CapturedViewpoint)
@@ -345,6 +349,13 @@ FString UNVSceneDataExporter::GetRootCaptureDirectoryPath() const
         FullRootCaptureDirectoryPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir(), FullRootCaptureDirectoryPath);
     }
     return FullRootCaptureDirectoryPath;
+}
+
+
+FString UNVSceneDataExporter::prep_shit() const
+{
+	UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: shit"));
+	return (TEXT("prep_shit"));
 }
 
 FString UNVSceneDataExporter::GetExportFolderName() const

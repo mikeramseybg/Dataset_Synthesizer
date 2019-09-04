@@ -222,6 +222,9 @@ public:
 	int BGNumberOfFramesToCapture = 1;
 	bool m_useBGTargetOverride = false;
 	FString m_simulationSave;
+	// this is the most recently *to be* removed item from the scene
+	// it is still active in the scene
+	AActor* m_simItem = nullptr;
 
 	void setBGTargetFolderOverride(bool useBGTargetOverride, FString simulationSave)
 	{
@@ -240,6 +243,11 @@ public:
 	{ 
 		return m_BGControllerReady; 
 	}
+
+	void storeBGSimItemActor(AActor* sim_item);
+	void resetBGSimItemActor();
+	AActor* getSimActor() { return m_simItem; }
+
 
 protected:
     virtual void PostLoad() final;
