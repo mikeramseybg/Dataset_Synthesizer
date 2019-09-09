@@ -325,8 +325,8 @@ void ANVSceneManager::updateObjectInstanceSegmentation()
 //#miker: stencil_strategy
 void ANVSceneManager::UpdateSegmentationMask(int stencil_strategy, int alternateFECount)
 {
-	const FString miker = FString::Printf(TEXT("#mikerdog: %d "), alternateFECount);
-	GLog->Log(miker);
+	//const FString miker = FString::Printf(TEXT("#mikerdog: %d "), alternateFECount);
+	//GLog->Log(miker);
 
 	// alternate between instance segment feature extractors
 	// 0: nvidia
@@ -334,7 +334,6 @@ void ANVSceneManager::UpdateSegmentationMask(int stencil_strategy, int alternate
 
 	bool bgFE =  alternateFECount % 2;
 
-	//if (!bgFE)
 	{
 	
 		UWorld* World = GetWorld();

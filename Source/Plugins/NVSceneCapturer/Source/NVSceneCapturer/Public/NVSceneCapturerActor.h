@@ -236,6 +236,7 @@ public:
 		m_useBGTargetOverride = useBGTargetOverride;
 		m_simulationSave = simulationSave;
 	}
+
 	void BGControllerIsCurrentlyDone(bool state, int sim_run, int pickset_run) 
 	{
 		m_BGControllerReady = state;

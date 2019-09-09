@@ -454,8 +454,13 @@ void ANVSceneCapturerActor::SetNumberOfFramesToCapture(int32 NewSceneCount)
 
 void ANVSceneCapturerActor::StartCapturing()
 {
-	//#miker: do NOT capture if the controller is still inserting objects into tote
-	if (!isBGControllerDone() || m_BGCapturing) { return; }
+	//#miker: 
+	// do NOT capture if the simulation controller is inserting objects into tote
+	if (!isBGControllerDone() || m_BGCapturing) 
+	{
+		return; 
+	}
+
 	m_BGCapturing = true;
     bNeedToExportScene = false;
     bSkipFirstFrame = true;
@@ -466,7 +471,6 @@ void ANVSceneCapturerActor::StartCapturing()
     if (bSceneIsReady)
     {
         StartCapturing_Internal();
-		//++m_bgAlternateFECount;
     }	
     else if (!TimeHandle_StartCapturingDelay.IsValid())
     {
@@ -556,7 +560,6 @@ void ANVSceneCapturerActor::StartCapturing_Internal()
 //
 void ANVSceneCapturerActor::updateComponentFeatureExtractorList()
 {
-
 	for (UNVSceneCapturerViewpointComponent* viewpoint_comp : ViewpointList)
 	{
 		//update any previously registered fe's with the scene feature extractor
@@ -567,8 +570,8 @@ void ANVSceneCapturerActor::updateComponentFeatureExtractorList()
 			auto& fe = FeatureExtractorSettings[i];
 			UNVSceneFeatureExtractor* ccref = fe.FeatureExtractorRef;
 			FString fe_name = ccref->GetDisplayName();
-			const FString miker = FString::Printf(TEXT("#miker_pigeon: %s "), *fe_name);
-			GLog->Log(miker);
+			//const FString miker = FString::Printf(TEXT("#miker_pigeon: %s "), *fe_name);
+			//GLog->Log(miker);
 
 			bool update_enable_to = ccref->IsEnabled();
 			ccref->updateFE(viewpoint_comp, i, update_enable_to);
