@@ -130,7 +130,7 @@ void UNVObjectMaskMananger::ApplyStencilMaskToActor(AActor* CheckActor, uint8 Ma
 			{
 				//#miker: dump maskids
 				const FString miker = FString::Printf(TEXT("ApplyStencilMaskToActor id: %s %d"),*CheckActor->GetName(),(int32)MaskId);
-				GLog->Log(miker);
+				//GLog->Log(miker);
 				CheckMeshComp->SetCustomDepthStencilValue((int32)MaskId);
 				CheckMeshComp->SetRenderCustomDepth(true);
 				//#miker: just a test 
@@ -153,9 +153,8 @@ void UNVObjectMaskMananger::ApplyVertexColorMaskToActor(AActor* CheckActor, uint
 		const FColor& MaskVertexColor = NVSceneCapturerUtils::ConvertInt32ToVertexColor(MaskId);
 
 		//#miker : generate rgb(a=255) and dump to log
-
 		const FString miker = FString::Printf(TEXT("ApplyVertexColorMaskToActor id: %s %d"), *CheckActor->GetName(), (int32)MaskId);
-		GLog->Log(miker);
+		//GLog->Log(miker);
 
 		//const FString miker = FString::Printf(TEXT("id: %d"),(int32)MaskId);
 	

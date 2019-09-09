@@ -297,7 +297,8 @@ void ANVSceneCapturerActor::CheckCaptureScene()
     }
 
     ANVSceneManager* ANVSceneManagerPtr = ANVSceneManager::GetANVSceneManagerPtr();
-    // if ANVSceneManagerPtr is nullptr, then there's no scene manager and it's assumed the scene is static and thus ready, else check with the scene manager
+    // if ANVSceneManagerPtr is nullptr, then there's no scene manager and it's 
+	// assumed the scene is static and thus ready, else check with the scene manager
     const bool bSceneIsReady = !ANVSceneManagerPtr || ANVSceneManagerPtr->GetState()== ENVSceneManagerState::Ready;
     UWorld* World = GetWorld();
     AGameModeBase* CurrentGameMode = World ? World->GetAuthGameMode() : nullptr;
@@ -314,7 +315,7 @@ void ANVSceneCapturerActor::CheckCaptureScene()
             }
             else
             {
-				UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: writing pixels..."));					
+				//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: writing pixels..."));					
 				CaptureSceneToPixelsData();					
 				// Update the capturer settings at the end of the frame after we already captured data of this frame
 				UpdateCapturerSettings();				
@@ -357,22 +358,32 @@ void ANVSceneCapturerActor::CaptureSceneToPixelsData()
             if (ViewpointComp && ViewpointComp->IsEnabled())
             {
 			    ViewpointComp->CaptureSceneToPixelsData(
-                    [this, FrameIndexForFile,FramePicksetForFile](const FNVTexturePixelData& CapturedPixelData, UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor, UNVSceneCapturerViewpointComponent* CapturedViewpoint)
+                    [this, FrameIndexForFile,FramePicksetForFile](const FNVTexturePixelData& CapturedPixelData, 
+						UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor, 
+						UNVSceneCapturerViewpointComponent* CapturedViewpoint)
                 {
                     if (SceneDataHandler)
                     {
-                        SceneDataHandler->HandleScenePixelsData(CapturedPixelData,
-                                                                CapturedFeatureExtractor,
-                                                                CapturedViewpoint,
-							FrameIndexForFile,FramePicksetForFile);
+						
+						if (CapturedFeatureExtractor->bIsEnabled)
+						{
+							SceneDataHandler->HandleScenePixelsData(CapturedPixelData,
+								CapturedFeatureExtractor,
+								CapturedViewpoint,
+								FrameIndexForFile, FramePicksetForFile);
+						}						
                     }
+					
 
                     if (SceneDataVisualizer)
                     {
-                        SceneDataVisualizer->HandleScenePixelsData(CapturedPixelData,
-                                CapturedFeatureExtractor,
-                                CapturedViewpoint,
-							FrameIndexForFile, FramePicksetForFile);
+						if (CapturedFeatureExtractor->bIsEnabled)
+						{
+							SceneDataVisualizer->HandleScenePixelsData(CapturedPixelData,
+								CapturedFeatureExtractor,
+								CapturedViewpoint,
+								FrameIndexForFile, FramePicksetForFile);
+						}
                     }
                 });
 
@@ -449,11 +460,13 @@ void ANVSceneCapturerActor::StartCapturing()
     bNeedToExportScene = false;
     bSkipFirstFrame = true;
     ANVSceneManager* ANVSceneManagerPtr = ANVSceneManager::GetANVSceneManagerPtr();
-    // if ANVSceneManagerPtr is nullptr, then there's no scene manager and it's assumed the scene is static and thus ready, else check with the scene manager
+    // if ANVSceneManagerPtr is nullptr, then there's no scene manager and it's assumed
+	//  the scene is static and thus ready, else check with the scene manager
 	const bool bSceneIsReady =  !ANVSceneManagerPtr || ANVSceneManagerPtr->GetState() == ENVSceneManagerState::Ready;
     if (bSceneIsReady)
     {
         StartCapturing_Internal();
+		//++m_bgAlternateFECount;
     }	
     else if (!TimeHandle_StartCapturingDelay.IsValid())
     {
@@ -496,15 +509,19 @@ void ANVSceneCapturerActor::StartCapturing_Internal()
         else
         {			
             ANVSceneManager* NVSceneManagerPtr = ANVSceneManager::GetANVSceneManagerPtr();
+		
+			//#miker:
             if (ensure(NVSceneManagerPtr))
             {
                 // Make sure the segmentation mask of objects in the scene are up-to-date before capturing them
-                NVSceneManagerPtr->UpdateSegmentationMask();
-            }
+                NVSceneManagerPtr->UpdateSegmentationMask(0,m_bgAlternateFECount);
+				updateComponentFeatureExtractorList();
+		   }
 
             // Now we can start capture.
             UpdateCapturerSettings();
-
+			
+			
             OnStartedEvent.Broadcast(this);
 
 			//#miker: update write folder overwrite and folder
@@ -532,7 +549,32 @@ void ANVSceneCapturerActor::StartCapturing_Internal()
         }
     }
 }
+//#miker:
+//pump updated fe's into the scenes feature extractor list
+// (which is used for providing some base capturing data to the 
+// exporter)
+//
+void ANVSceneCapturerActor::updateComponentFeatureExtractorList()
+{
 
+	for (UNVSceneCapturerViewpointComponent* viewpoint_comp : ViewpointList)
+	{
+		//update any previously registered fe's with the scene feature extractor
+		const int fe_cnt = FeatureExtractorSettings.Num();
+
+		for (int i = 0; i < fe_cnt; ++i)
+		{
+			auto& fe = FeatureExtractorSettings[i];
+			UNVSceneFeatureExtractor* ccref = fe.FeatureExtractorRef;
+			FString fe_name = ccref->GetDisplayName();
+			const FString miker = FString::Printf(TEXT("#miker_pigeon: %s "), *fe_name);
+			GLog->Log(miker);
+
+			bool update_enable_to = ccref->IsEnabled();
+			ccref->updateFE(viewpoint_comp, i, update_enable_to);
+		}
+	}
+}
 void ANVSceneCapturerActor::StopCapturing()
 {
     ensure(CurrentState != ENVSceneCapturerState::NotActive);
@@ -593,6 +635,22 @@ void ANVSceneCapturerActor::OnCompleted()
         {
             SceneDataHandler->OnCapturingCompleted();
         }
+		
+		//#miker: update feature extractors
+
+
+		++m_bgAlternateFECount;
+		//ANVSceneManager* NVSceneManagerPtr = ANVSceneManager::GetANVSceneManagerPtr();
+		//NVSceneManagerPtr->UpdateSegmentationMask(0, m_bgAlternateFECount);
+/*		ANVSceneManager* NVSceneManagerPtr = ANVSceneManager::GetANVSceneManagerPtr();
+		NVSceneManagerPtr->UpdateSegmentationMask(0, m_bgAlternateFECount);
+		UpdateViewpointList();
+		for (auto* ViewpointComp : ViewpointList)
+		{
+			ViewpointComp->SetupFeatureExtractors();
+		}
+		*/
+
 
         OnCompletedEvent.Broadcast(this, true);
     }

@@ -225,6 +225,11 @@ public:
 	// this is the most recently *to be* removed item from the scene
 	// it is still active in the scene
 	AActor* m_simItem = nullptr;
+	// capturing has been modified to be phased based
+	// 0 : nvidia fe's (instance,class, etc..)
+	// 1 : bg (bg instance with alternate vc)
+	int m_bgAlternateFECount = 0;
+	void updateComponentFeatureExtractorList();
 
 	void setBGTargetFolderOverride(bool useBGTargetOverride, FString simulationSave)
 	{

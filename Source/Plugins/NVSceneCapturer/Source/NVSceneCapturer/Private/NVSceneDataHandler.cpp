@@ -40,7 +40,7 @@ UNVSceneDataExporter::UNVSceneDataExporter() : Super(),
 
 bool UNVSceneDataExporter::CanHandleMoreData() const
 {
-    return ImageExporterThread &&
+	return  ImageExporterThread &&
             ((MaxSaveImageAsyncCount <= 0) || (ImageExporterThread->GetPendingImagesCount() <= MaxSaveImageAsyncCount / 2));
 }
 
@@ -50,20 +50,30 @@ bool UNVSceneDataExporter::IsHandlingData() const
 }
 
 //#miker: export to png
-bool UNVSceneDataExporter::HandleScenePixelsData(const FNVTexturePixelData& CapturedPixelData, 
-	UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor, 
+bool UNVSceneDataExporter::HandleScenePixelsData(const FNVTexturePixelData& CapturedPixelData,
+	UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor,
 	UNVSceneCapturerViewpointComponent* CapturedViewpoint,
 	int32 FrameIndex, int32 PicksetIndex)
 {
-    bool bResult = false;
-    if (ImageExporterThread && CapturedFeatureExtractor && CapturedViewpoint)
-    {
+	bool bResult = false;
+	//FString fe_name = CapturedFeatureExtractor->GetDisplayName();
+	//const FString miker = FString::Printf(TEXT("#mikerdog: handleScenePixelsData1:  %s %d "), *fe_name, CapturedFeatureExtractor->IsEnabled());
+	//GLog->Log(miker);
+
+	if (ImageExporterThread && CapturedFeatureExtractor &&
+		CapturedViewpoint && CapturedFeatureExtractor->IsEnabled())
+	{
 		ENVImageFormat ExportImageFormat = ENVImageFormat::PNG;
 
-        const FString NewExportFilePath = GetExportFilePath(CapturedFeatureExtractor, CapturedViewpoint, FrameIndex, PicksetIndex, GetExportImageExtension(ExportImageFormat));
-        ImageExporterThread->ExportImage(CapturedPixelData, NewExportFilePath, ExportImageFormat);
-        bResult = true;
-    }
+		const FString NewExportFilePath = GetExportFilePath(CapturedFeatureExtractor, CapturedViewpoint, FrameIndex, PicksetIndex, GetExportImageExtension(ExportImageFormat));
+		ImageExporterThread->ExportImage(CapturedPixelData, NewExportFilePath, ExportImageFormat);
+		ImageExporterThread->ExportImage(CapturedPixelData, NewExportFilePath, ExportImageFormat);
+		bResult = true;
+	}
+	else
+	{
+		GLog->Log(TEXT("   NOT enabled !!! "));
+	}
 
 
 	//#miker: test for dds loading
@@ -413,6 +423,13 @@ FString UNVSceneDataExporter::GetExportFilePath(UNVSceneFeatureExtractor* Captur
         int32 FrameIndex, int32 PicksetIndex,
         const FString& FileExtension) const
 {
+
+	FString fe_name = CapturedFeatureExtractor->GetDisplayName();
+	//{
+	//	const FString miker = FString::Printf(TEXT("#mikerdog: GetExportFilePath1:  %s %d "), *fe_name, CapturedFeatureExtractor->IsEnabled());
+	//	GLog->Log(miker);
+	//}
+
     const FString OutputFolderPath = GetFullOutputDirectoryPath();
     FString OutputFileName = FString::Printf(TEXT("%06i.%06i"), FrameIndex,PicksetIndex);
     const auto& ViewpointSettings = CapturedViewpoint->GetSettings();
@@ -420,21 +437,33 @@ FString UNVSceneDataExporter::GetExportFilePath(UNVSceneFeatureExtractor* Captur
     {
         OutputFileName += TEXT(".") + ViewpointSettings.ExportFileNamePostfix;
     }
+
+	//{
+	//	const FString miker = FString::Printf(TEXT("#mikerdog: GetExportFilePath2:  %s "), *OutputFileName);
+	//	GLog->Log(miker);
+	//}
     if (!CapturedFeatureExtractor->ExportFileNamePostfix.IsEmpty())
     {
-
 		//#miker: stencil strategy file ext override
-		// since i'm just cannabilizing the class segment extractor
-		const FString& actor_name = CapturedFeatureExtractor->GetName();
-		if (actor_name.Contains("Class Segmentation_BGT"))
-		{
-			OutputFileName += TEXT(".st");
-		}
-		else
+		// since i'm just cannabilizing the class segment extractor		
+		//const FString& actor_display_name = CapturedFeatureExtractor->GetDisplayName();
+	
+		//if (fe_name.Contains("_bg"))
+		//{
+		//	OutputFileName += TEXT(".st");
+		//}
+		//else
 		{
 			OutputFileName += TEXT(".") + CapturedFeatureExtractor->ExportFileNamePostfix;
 		}
+		
     }
+
+	//{
+	//	const FString miker = FString::Printf(TEXT("#mikerdog: GetExportFilePath3:  %s "), *OutputFileName);
+	//	GLog->Log(miker);
+	//}
+
     OutputFileName += FileExtension;
 
 	FString ExportFilePath = FPaths::Combine(OutputFolderPath, OutputFileName);

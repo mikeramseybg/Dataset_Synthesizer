@@ -66,6 +66,30 @@ void UNVSceneFeatureExtractor::Init(UNVSceneCapturerViewpointComponent* InOwnerV
     }
 }
 
+//#miker: update a feature extractor throughout a simulation
+void UNVSceneFeatureExtractor::updateFE(UNVSceneCapturerViewpointComponent* InOwnerViewpoint,
+										int fe_index, bool enable)
+{
+	if (fe_index == -1) { return; }
+	
+	OwnerViewpoint = InOwnerViewpoint;
+	if (OwnerViewpoint)
+	{
+		if (fe_index >= OwnerViewpoint->FeatureExtractorList.Num())
+		{
+			return;
+		}
+
+		UNVSceneFeatureExtractor* fe_updated = OwnerViewpoint->FeatureExtractorList[fe_index];
+		if (fe_updated)
+		{
+			//FString fe_name = fe_updated->GetDisplayName();
+			//const FString miker = FString::Printf(TEXT("         : %s - %d "), *fe_name,enable);
+			//GLog->Log(miker);
+			fe_updated->bIsEnabled  = enable;
+		}		 
+	}
+}
 void UNVSceneFeatureExtractor::StartCapturing()
 {
     bCapturing = true;

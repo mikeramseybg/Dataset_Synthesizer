@@ -45,11 +45,17 @@ public:
     FString GetDisplayName() const;
 
     void Init(UNVSceneCapturerViewpointComponent* InOwnerViewpoint);
-
+	
     virtual void StartCapturing();
     virtual void StopCapturing();
 
     virtual void UpdateCapturerSettings() PURE_VIRTUAL(UNVSceneFeatureExtractor::UpdateCapturerSettings,);
+
+
+	//#miker: runtime fe updates
+	void updateFE(UNVSceneCapturerViewpointComponent* InOwnerViewpoint,
+				 int fe_index = -1, bool enable = false);
+
 protected:
     virtual void UpdateSettings() PURE_VIRTUAL(UNVSceneFeatureExtractor::UpdateSettings,);
 
@@ -67,6 +73,10 @@ public: // Editor properties
     /// The string to add to the end of the exported file's name captured from this feature extractor. e.g: "depth", "mask" ...
     UPROPERTY(EditAnywhere, SimpleDisplay, Category = Config)
     FString ExportFileNamePostfix;
+
+	//#miker:
+	// for restoration after BG pass
+	bool bWasEnabled = false;
 
 protected: // Transient properties
     UPROPERTY(Transient)

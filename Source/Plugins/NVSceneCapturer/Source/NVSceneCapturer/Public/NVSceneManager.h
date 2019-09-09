@@ -72,7 +72,7 @@ public:
 	//#miker: support for rebuilding ids 
 	//#miker: stencil_strategy
 	void UpdateSegmentationMaskMike(int stencil_strategy = 0);
-    void UpdateSegmentationMask(int stencil_strategy = 0);
+    void UpdateSegmentationMask(int stencil_strategy = 0, int alternateFECount=0);
 
 	UPROPERTY(EditAnywhere, Category = CapturerScene)
 	FNVObjectSegmentation_Class ObjectClassSegmentation;
@@ -98,6 +98,8 @@ public:
 	void storeBGSimItemActor(AActor* sim_item);
 	void resetBGSimItemActor();
 	AActor* getSimActor() { return m_simItem; }
+
+	void updateObjectInstanceSegmentation();
 
 	bool m_useBGTargetOverride = false;
 	FString m_simulationSave;

@@ -314,54 +314,154 @@ void ANVSceneManager::SetupSceneInternal()
 }
 
 
-//#miker: stencil_strategy
-/*
- the issue is that the object segmentation scan actors changes the actors
- depth value before the image can be written out
-
-*/
-void ANVSceneManager::UpdateSegmentationMaskMike(int stencil_strategy)
+void ANVSceneManager::updateObjectInstanceSegmentation()
 {
+
 	UWorld* World = GetWorld();
-	if (World)
-	{
-		ObjectClassSegmentation.ScanActors(World, stencil_strategy);
-	}
+//	ObjectInstanceSegmentation_targeted.ScanActors(World,0,m_simItem);
+
 }
 
-
 //#miker: stencil_strategy
-void ANVSceneManager::UpdateSegmentationMask(int stencil_strategy)
+void ANVSceneManager::UpdateSegmentationMask(int stencil_strategy, int alternateFECount)
 {
-    UWorld* World = GetWorld();
-    if (World)
-    {
-		ObjectClassSegmentation.ScanActors(World);
+	const FString miker = FString::Printf(TEXT("#mikerdog: %d "), alternateFECount);
+	GLog->Log(miker);
 
-        bool bNeedInstanceSegmentation = false;
-        for (ANVSceneCapturerActor* CheckCapturer : SceneCapturers)
-        {
-            if (CheckCapturer && CheckCapturer->bIsActive)
-            {
-                for (const auto& CheckFeatureExtractor : CheckCapturer->FeatureExtractorSettings)
-                {
-                    UNVSceneFeatureExtractor* CheckFeatureExtractorRef = CheckFeatureExtractor.FeatureExtractorRef;
-                    if (CheckFeatureExtractorRef && CheckFeatureExtractorRef->IsEnabled() && 
-						CheckFeatureExtractorRef->IsA(UNVSceneFeatureExtractor_VertexColorMask::StaticClass()))
-                    {
-                        bNeedInstanceSegmentation = true;
-                        break;
-                    }
-                }
-            }
-        }
-        // Only update the objects' instance segmentation if it need to be captured
-        if (bNeedInstanceSegmentation)
-        {
-			ObjectInstanceSegmentation.ScanActors(World);// , 0, m_simItem);
-			ObjectInstanceSegmentation_targeted.ScanActors(World,0,m_simItem);
-        }
-    }
+	// alternate between instance segment feature extractors
+	// 0: nvidia
+	// 1: bg (sub instance)
+
+	bool bgFE =  alternateFECount % 2;
+
+	//if (!bgFE)
+	{
+	
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			ObjectClassSegmentation.ScanActors(World);
+
+			bool bNeedInstanceSegmentation = false;
+			for (ANVSceneCapturerActor* CheckCapturer : SceneCapturers)
+			{
+				if (CheckCapturer && CheckCapturer->bIsActive)
+				{
+				/*	auto& prepfe = CheckCapturer->FeatureExtractorSettings[5];
+					UNVSceneFeatureExtractor* prepref = prepfe.FeatureExtractorRef;
+					FString fe_name = prepref->GetDisplayName();
+					const FString miker = FString::Printf(TEXT("#mikercat: %s "), *fe_name);
+					GLog->Log(miker);
+				*/
+
+					//for (auto& CheckFeatureExtractor : CheckCapturer->FeatureExtractorSettings)
+					const int fe_cnt = CheckCapturer->FeatureExtractorSettings.Num();
+					for ( int i=0;i<fe_cnt;++i)
+					{
+						auto& CheckFeatureExtractor = CheckCapturer->FeatureExtractorSettings[i];
+
+						UNVSceneFeatureExtractor* CheckFeatureExtractorRef = CheckFeatureExtractor.FeatureExtractorRef;
+						FString fe_name = CheckFeatureExtractorRef->GetDisplayName();
+						//const FString miker = FString::Printf(TEXT("#mikercat: %s "), *fe_name);
+						//GLog->Log(miker);
+
+						if (CheckFeatureExtractorRef)
+						{							
+							const FString& fe_name = CheckFeatureExtractorRef->GetDisplayName();
+							//if (fe_name.Contains("instance") || fe_name.Contains("depth"))
+							//{
+							//	CheckFeatureExtractorRef->bIsEnabled = false;
+							//}
+
+							// nvidia fe
+							if (!bgFE) 
+							{
+								GLog->Log(TEXT("#miker: --------------------------------> normal FE"));
+								// disable bg fe
+								if (fe_name.Contains("_bg"))
+								{
+									CheckFeatureExtractorRef->bIsEnabled = false;
+								}								
+								else //ensure nvidia fe enabled
+								{
+									if (CheckFeatureExtractorRef->bWasEnabled || 
+										CheckFeatureExtractorRef->bIsEnabled)
+									{
+										CheckFeatureExtractorRef->bIsEnabled = true;
+										CheckFeatureExtractorRef->bWasEnabled = true;
+									}
+								}
+							}
+							else // bg fe
+							{
+								GLog->Log(TEXT("#miker: --------------------------------> BG FE"));
+								if (fe_name.Contains("_bg"))
+								{
+									CheckFeatureExtractorRef->bIsEnabled = true;
+								}
+								else
+								{
+									//if (fe_name.Contains("True"))
+									//{
+									//	CheckFeatureExtractorRef->bIsEnabled = true;
+									//}
+									//else									
+									{
+										if (CheckFeatureExtractorRef->bIsEnabled)
+										{
+											CheckFeatureExtractorRef->bWasEnabled = true;
+										}
+										CheckFeatureExtractorRef->bIsEnabled = false;
+										
+									}
+								}
+							}
+							
+						}
+						const FString miker = FString::Printf(TEXT("#mikercat nvd: %s  %d"), *fe_name,
+							CheckFeatureExtractorRef->bIsEnabled);
+						GLog->Log(miker);
+						if (CheckFeatureExtractorRef && CheckFeatureExtractorRef->IsEnabled() &&
+							CheckFeatureExtractorRef->IsA(UNVSceneFeatureExtractor_VertexColorMask::StaticClass()))
+						{
+							bNeedInstanceSegmentation = true;
+							//break;
+						}
+					}
+				}
+			}
+
+		//	if (bNeedInstanceSegmentation)
+			{
+				if (!bgFE) 
+				{ 
+					ObjectInstanceSegmentation.ScanActors(World); 
+				} 
+				else
+				{
+					ObjectInstanceSegmentation_targeted.ScanActors(World, 0, m_simItem);
+				}
+
+			}
+
+			bNeedInstanceSegmentation = false;
+			/*
+			for (ANVSceneCapturerActor* CheckCapturer : SceneCapturers)
+			{
+				if (CheckCapturer && CheckCapturer->bIsActive)
+				{
+					auto& prepfe = CheckCapturer->FeatureExtractorSettings[5];
+					UNVSceneFeatureExtractor* prepref = prepfe.FeatureExtractorRef;
+					FString fe_name = prepref->GetDisplayName();
+					const FString miker = FString::Printf(TEXT("#mikercat: %s "), *fe_name);
+					GLog->Log(miker);
+					prepref->bIsEnabled = false;
+				}
+			}
+			*/
+		}
+	}
+	
 }
 
 void ANVSceneManager::FocusNextMarker()
