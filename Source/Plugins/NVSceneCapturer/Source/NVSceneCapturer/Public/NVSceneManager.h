@@ -92,11 +92,19 @@ public:
 	ANVSceneCapturerActor* m_simpleCapturer = nullptr;
 	void RepeatingFunction();
 	void RestartSceneManager();
-	void BGControllerIsCurrentlyDone(bool state,int sim_run, int pickset_run);
+	void BGControllerIsCurrentlyDone(bool state,int sim_run, int pickset_run,
+		int pickset_subimage, int feature_extractor_phase);
 	// individual instance image generation
 	// in addition to scene as a whole
 	void storeBGSimItemActor(AActor* sim_item);
 	void resetBGSimItemActor();
+	//destroy cached vert/stencil values
+	// caled post individual sim run
+	void resetCachedVertAndStencilValues()
+	{
+		ObjectInstanceSegmentation.resetCachedVertAndStencilValues();
+		ObjectInstanceSegmentation_targeted.resetCachedVertAndStencilValues();
+	}
 	AActor* getSimActor() { return m_simItem; }
 
 	void updateObjectInstanceSegmentation();

@@ -310,10 +310,15 @@ bool FNVImageExporter::ExportImage(IImageWrapperModule* ImageWrapperModule, cons
 			const TArray<uint8>& CompressedBitmap = CompressImage(ImageWrapperModule, ExportedPixelData, ExportImageFormat, CompressedQuality);
 			bResult = FFileHelper::SaveArrayToFile(CompressedBitmap, *ExportFilePath);
 		}
-		if (!bResult)
-		{
-			UE_LOG(LogNVSceneCapturer, Error, TEXT("Unable to save image to file.  Check permissions. File is %s"), *ExportFilePath);
-		}
+
+		//#miker: occasionally the ndds attempts to write the same file
+		// multiple times because the call to write is triggered and
+		// subsequently continuously retriggered in the tick()
+		// lame...
+		//if (!bResult)
+		//{
+		//	UE_LOG(LogNVSceneCapturer, Error, TEXT("Unable to save image to file.  Check permissions. File is %s"), *ExportFilePath);
+		//}
 	}
 	return bResult;
 }

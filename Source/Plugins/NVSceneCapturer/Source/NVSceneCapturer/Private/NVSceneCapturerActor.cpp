@@ -342,6 +342,8 @@ void ANVSceneCapturerActor::CaptureSceneToPixelsData()
     const int32 CurrentFrameIndex = CapturedFrameCounter.GetTotalFrameCount();
 	const int FrameIndexForFile = m_overallFrameAccumulator;
 	const int FramePicksetForFile = m_picksetFrameAccumulator;
+	const int PicksetSubImage = m_picksetSubImage;
+
 #ifdef BGDEBUG_CAPTURESCENE_FILE
 	UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: CaptureSceneToPixelsData %d.%d"), FrameIndexForFile, FramePicksetForFile);
 #endif
@@ -358,7 +360,7 @@ void ANVSceneCapturerActor::CaptureSceneToPixelsData()
             if (ViewpointComp && ViewpointComp->IsEnabled())
             {
 			    ViewpointComp->CaptureSceneToPixelsData(
-                    [this, FrameIndexForFile,FramePicksetForFile](const FNVTexturePixelData& CapturedPixelData, 
+                    [this, FrameIndexForFile,FramePicksetForFile,PicksetSubImage](const FNVTexturePixelData& CapturedPixelData, 
 						UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor, 
 						UNVSceneCapturerViewpointComponent* CapturedViewpoint)
                 {
@@ -370,7 +372,7 @@ void ANVSceneCapturerActor::CaptureSceneToPixelsData()
 							SceneDataHandler->HandleScenePixelsData(CapturedPixelData,
 								CapturedFeatureExtractor,
 								CapturedViewpoint,
-								FrameIndexForFile, FramePicksetForFile);
+								FrameIndexForFile, FramePicksetForFile,PicksetSubImage);
 						}						
                     }
 					
@@ -382,20 +384,24 @@ void ANVSceneCapturerActor::CaptureSceneToPixelsData()
 							SceneDataVisualizer->HandleScenePixelsData(CapturedPixelData,
 								CapturedFeatureExtractor,
 								CapturedViewpoint,
-								FrameIndexForFile, FramePicksetForFile);
+								FrameIndexForFile, FramePicksetForFile,PicksetSubImage);
 						}
                     }
                 });
 
                 ViewpointComp->CaptureSceneAnnotationData(
-                    [this, FrameIndexForFile, FramePicksetForFile](const TSharedPtr<FJsonObject>& CapturedData, UNVSceneFeatureExtractor_AnnotationData* CapturedFeatureExtractor, UNVSceneCapturerViewpointComponent* CapturedViewpoint)
+                    [this, FrameIndexForFile, FramePicksetForFile, PicksetSubImage]
+						(const TSharedPtr<FJsonObject>& CapturedData,
+							UNVSceneFeatureExtractor_AnnotationData* CapturedFeatureExtractor,
+							UNVSceneCapturerViewpointComponent* CapturedViewpoint
+							)
                 {
                     if (SceneDataHandler)
                     {
                         SceneDataHandler->HandleSceneAnnotationData(CapturedData,
                                 CapturedFeatureExtractor,
                                 CapturedViewpoint,
-							FrameIndexForFile, FramePicksetForFile);
+							FrameIndexForFile, FramePicksetForFile, PicksetSubImage);
                     }
                 });
             }
@@ -625,8 +631,9 @@ void ANVSceneCapturerActor::OnCompleted()
         const float CompletedCapturingTimestamp = GetWorld()->GetRealTimeSeconds();
         const float CapturingDuration = CompletedCapturingTimestamp - StartCapturingTimestamp;
 
-        UE_LOG(LogNVSceneCapturer, Warning, TEXT("Capturing completed!!!\nTotal capturing duration: %.6f\nStart time: %.6f\nCompleted time: %.6f"),
-               CapturedDuration, StartCapturingTimestamp, CompletedCapturingTimestamp);
+		//#miker:
+        //UE_LOG(LogNVSceneCapturer, Warning, TEXT("Capturing completed!!!\nTotal capturing duration: %.6f\nStart time: %.6f\nCompleted time: %.6f"),
+        //      CapturedDuration, StartCapturingTimestamp, CompletedCapturingTimestamp);
 
         for (UNVSceneCapturerViewpointComponent* ViewpointComp : ViewpointList)
         {
@@ -639,21 +646,8 @@ void ANVSceneCapturerActor::OnCompleted()
             SceneDataHandler->OnCapturingCompleted();
         }
 		
-		//#miker: update feature extractors
-
-
-		++m_bgAlternateFECount;
-		//ANVSceneManager* NVSceneManagerPtr = ANVSceneManager::GetANVSceneManagerPtr();
-		//NVSceneManagerPtr->UpdateSegmentationMask(0, m_bgAlternateFECount);
-/*		ANVSceneManager* NVSceneManagerPtr = ANVSceneManager::GetANVSceneManagerPtr();
-		NVSceneManagerPtr->UpdateSegmentationMask(0, m_bgAlternateFECount);
-		UpdateViewpointList();
-		for (auto* ViewpointComp : ViewpointList)
-		{
-			ViewpointComp->SetupFeatureExtractors();
-		}
-		*/
-
+		//++m_bgAlternateFECount;
+		
 
         OnCompletedEvent.Broadcast(this, true);
     }
@@ -793,7 +787,7 @@ bool ANVSceneCapturerActor::CanHandleMoreSceneData() const
 
 void ANVSceneCapturerActor::storeBGSimItemActor(AActor* sim_item)
 {
-	UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: storeBGSimItemActor %s"), *(sim_item->GetName()));
+	//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: storeBGSimItemActor %s"), *(sim_item->GetName()));
 	m_simItem = sim_item;
 }
 

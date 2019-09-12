@@ -53,7 +53,7 @@ bool UNVSceneDataExporter::IsHandlingData() const
 bool UNVSceneDataExporter::HandleScenePixelsData(const FNVTexturePixelData& CapturedPixelData,
 	UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor,
 	UNVSceneCapturerViewpointComponent* CapturedViewpoint,
-	int32 FrameIndex, int32 PicksetIndex)
+	int32 FrameIndex, int32 PicksetIndex, int32 PicksetSubImage)
 {
 	bool bResult = false;
 	//FString fe_name = CapturedFeatureExtractor->GetDisplayName();
@@ -65,7 +65,7 @@ bool UNVSceneDataExporter::HandleScenePixelsData(const FNVTexturePixelData& Capt
 	{
 		ENVImageFormat ExportImageFormat = ENVImageFormat::PNG;
 
-		const FString NewExportFilePath = GetExportFilePath(CapturedFeatureExtractor, CapturedViewpoint, FrameIndex, PicksetIndex, GetExportImageExtension(ExportImageFormat));
+		const FString NewExportFilePath = GetExportFilePath(CapturedFeatureExtractor, CapturedViewpoint, FrameIndex, PicksetIndex, PicksetSubImage, GetExportImageExtension(ExportImageFormat));
 		ImageExporterThread->ExportImage(CapturedPixelData, NewExportFilePath, ExportImageFormat);
 		ImageExporterThread->ExportImage(CapturedPixelData, NewExportFilePath, ExportImageFormat);
 		bResult = true;
@@ -94,14 +94,17 @@ bool UNVSceneDataExporter::HandleScenePixelsData(const FNVTexturePixelData& Capt
     return bResult;
 }
 
-bool UNVSceneDataExporter::HandleSceneAnnotationData(const TSharedPtr<FJsonObject>& CapturedData, class UNVSceneFeatureExtractor_AnnotationData* CapturedFeatureExtractor, class UNVSceneCapturerViewpointComponent* CapturedViewpoint, int32 FrameIndex, int32 PicksetIndex)
+bool UNVSceneDataExporter::HandleSceneAnnotationData(const TSharedPtr<FJsonObject>& CapturedData,
+	class UNVSceneFeatureExtractor_AnnotationData* CapturedFeatureExtractor,
+	class UNVSceneCapturerViewpointComponent* CapturedViewpoint,
+	int32 FrameIndex, int32 PicksetIndex, int32 PicksetSubImage)
 {
     bool bResult = false;
     if (CapturedFeatureExtractor && CapturedViewpoint)
     {
         static const FString JsonExtension = TEXT(".json");
 
-        const FString NewExportFilePath = GetExportFilePath(CapturedFeatureExtractor, CapturedViewpoint, FrameIndex, PicksetIndex, JsonExtension);
+        const FString NewExportFilePath = GetExportFilePath(CapturedFeatureExtractor, CapturedViewpoint, FrameIndex, PicksetIndex, PicksetSubImage, JsonExtension);
         return NVSceneCapturerUtils::SaveJsonObjectToFile(CapturedData, NewExportFilePath);
         bResult = true;
     }
@@ -420,7 +423,7 @@ void UNVSceneDataExporter::SetSubFolderName(const FString& NewSubFolderName)
 
 FString UNVSceneDataExporter::GetExportFilePath(UNVSceneFeatureExtractor* CapturedFeatureExtractor,
         UNVSceneCapturerViewpointComponent* CapturedViewpoint,
-        int32 FrameIndex, int32 PicksetIndex,
+        int32 FrameIndex, int32 PicksetIndex, int32 PicksetSubImage,
         const FString& FileExtension) const
 {
 
@@ -431,7 +434,7 @@ FString UNVSceneDataExporter::GetExportFilePath(UNVSceneFeatureExtractor* Captur
 	//}
 
     const FString OutputFolderPath = GetFullOutputDirectoryPath();
-    FString OutputFileName = FString::Printf(TEXT("%06i.%06i"), FrameIndex,PicksetIndex);
+    FString OutputFileName = FString::Printf(TEXT("%06i.%06i.%06i"), FrameIndex,PicksetIndex, PicksetSubImage);
     const auto& ViewpointSettings = CapturedViewpoint->GetSettings();
     if (!ViewpointSettings.ExportFileNamePostfix.IsEmpty())
     {
@@ -525,7 +528,10 @@ bool UNVSceneDataVisualizer::IsHandlingData() const
     return false;
 }
 
-bool UNVSceneDataVisualizer::HandleScenePixelsData(const FNVTexturePixelData& CapturedPixelData, UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor, UNVSceneCapturerViewpointComponent* CapturedViewpoint, int32 FrameIndex, int32 PicksetIndex)
+bool UNVSceneDataVisualizer::HandleScenePixelsData(const FNVTexturePixelData& CapturedPixelData,
+	UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor,
+	UNVSceneCapturerViewpointComponent* CapturedViewpoint, 
+	int32 FrameIndex, int32 PicksetIndex, int32 PicksetSubImage)
 {
     if (!CapturedFeatureExtractor || !CapturedViewpoint)
     {
@@ -537,7 +543,10 @@ bool UNVSceneDataVisualizer::HandleScenePixelsData(const FNVTexturePixelData& Ca
     return true;
 }
 
-bool UNVSceneDataVisualizer::HandleSceneAnnotationData(const TSharedPtr<FJsonObject>& CapturedData, class UNVSceneFeatureExtractor_AnnotationData* CapturedFeatureExtractor, class UNVSceneCapturerViewpointComponent* CapturedViewpoint, int32 FrameIndex, int32 PicksetIndex)
+bool UNVSceneDataVisualizer::HandleSceneAnnotationData(const TSharedPtr<FJsonObject>& CapturedData,
+	class UNVSceneFeatureExtractor_AnnotationData* CapturedFeatureExtractor,
+	class UNVSceneCapturerViewpointComponent* CapturedViewpoint, 
+	int32 FrameIndex, int32 PicksetIndex, int32 PicksetSubImage)
 {
     // TODO: Need to handle general data, annotation, not just the pixels data
     return false;

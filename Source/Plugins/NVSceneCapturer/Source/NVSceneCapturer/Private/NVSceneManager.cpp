@@ -101,7 +101,7 @@ void ANVSceneManager::PostInitializeComponents()
 
 void ANVSceneManager::RestartSceneManager()
 {
-	UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: restartSceneManager"));
+	//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: restartSceneManager"));
 
 	ResetState();
 	//Reset();
@@ -114,7 +114,7 @@ void ANVSceneManager::RestartSceneManager()
 
 void ANVSceneManager::storeBGSimItemActor(AActor* sim_item)
 {
-	UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: store bg sim actor"));
+	//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: store bg sim actor"));
 	if (sim_item == nullptr)
 	{
 		UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: sim actor is null!!!!!!!!"));
@@ -126,15 +126,17 @@ void ANVSceneManager::storeBGSimItemActor(AActor* sim_item)
 
 void ANVSceneManager::resetBGSimItemActor()
 {
-	UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: reset bg sim actor"));
+	//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: reset bg sim actor"));
 	m_simItem = nullptr;
 }
 
-void ANVSceneManager::BGControllerIsCurrentlyDone(bool state, int sim_run, int pickset_run)
+void ANVSceneManager::BGControllerIsCurrentlyDone(bool state, int sim_run, 
+	int pickset_run, int pickset_subimage,
+	int feature_extractor_phase)
 {
 	if (m_simpleCapturer)
 	{
-		m_simpleCapturer->BGControllerIsCurrentlyDone(state, sim_run, pickset_run);
+		m_simpleCapturer->BGControllerIsCurrentlyDone(state, sim_run, pickset_run, pickset_subimage, feature_extractor_phase);
 	}
 }
 
@@ -313,15 +315,6 @@ void ANVSceneManager::SetupSceneInternal()
     }
 }
 
-
-void ANVSceneManager::updateObjectInstanceSegmentation()
-{
-
-	UWorld* World = GetWorld();
-//	ObjectInstanceSegmentation_targeted.ScanActors(World,0,m_simItem);
-
-}
-
 //#miker: stencil_strategy
 void ANVSceneManager::UpdateSegmentationMask(int stencil_strategy, int alternateFECount)
 {
@@ -331,11 +324,9 @@ void ANVSceneManager::UpdateSegmentationMask(int stencil_strategy, int alternate
 	// alternate between instance segment feature extractors
 	// 0: nvidia
 	// 1: bg (sub instance)
-
-	bool bgFE =  alternateFECount % 2;
-
-	{
-	
+	// probably will add 2 & 3 modes, but for now...:-(
+	bool bgFE = (bool) alternateFECount;
+	{	
 		UWorld* World = GetWorld();
 		if (World)
 		{
@@ -346,14 +337,6 @@ void ANVSceneManager::UpdateSegmentationMask(int stencil_strategy, int alternate
 			{
 				if (CheckCapturer && CheckCapturer->bIsActive)
 				{
-				/*	auto& prepfe = CheckCapturer->FeatureExtractorSettings[5];
-					UNVSceneFeatureExtractor* prepref = prepfe.FeatureExtractorRef;
-					FString fe_name = prepref->GetDisplayName();
-					const FString miker = FString::Printf(TEXT("#mikercat: %s "), *fe_name);
-					GLog->Log(miker);
-				*/
-
-					//for (auto& CheckFeatureExtractor : CheckCapturer->FeatureExtractorSettings)
 					const int fe_cnt = CheckCapturer->FeatureExtractorSettings.Num();
 					for ( int i=0;i<fe_cnt;++i)
 					{
@@ -375,7 +358,7 @@ void ANVSceneManager::UpdateSegmentationMask(int stencil_strategy, int alternate
 							// nvidia fe
 							if (!bgFE) 
 							{
-								GLog->Log(TEXT("#miker: --------------------------------> normal FE"));
+								//GLog->Log(TEXT("#miker: --------------------------------> normal FE"));
 								// disable bg fe
 								if (fe_name.Contains("_bg"))
 								{
@@ -393,7 +376,7 @@ void ANVSceneManager::UpdateSegmentationMask(int stencil_strategy, int alternate
 							}
 							else // bg fe
 							{
-								GLog->Log(TEXT("#miker: --------------------------------> BG FE"));
+								//GLog->Log(TEXT("#miker: --------------------------------> BG FE"));
 								if (fe_name.Contains("_bg"))
 								{
 									CheckFeatureExtractorRef->bIsEnabled = true;
@@ -417,9 +400,9 @@ void ANVSceneManager::UpdateSegmentationMask(int stencil_strategy, int alternate
 							}
 							
 						}
-						const FString miker = FString::Printf(TEXT("#mikercat nvd: %s  %d"), *fe_name,
-							CheckFeatureExtractorRef->bIsEnabled);
-						GLog->Log(miker);
+						//const FString miker = FString::Printf(TEXT("#mikercat nvd: %s  %d"), *fe_name,
+						//	CheckFeatureExtractorRef->bIsEnabled);
+						//GLog->Log(miker);
 						if (CheckFeatureExtractorRef && CheckFeatureExtractorRef->IsEnabled() &&
 							CheckFeatureExtractorRef->IsA(UNVSceneFeatureExtractor_VertexColorMask::StaticClass()))
 						{
@@ -518,7 +501,7 @@ void ANVSceneManager::OnCapturingCompleted(ANVSceneCapturerActor* SceneCapturer,
 
             if (IsAllSceneCaptured())
             {
-				UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: nvscenemanager::...scene captured in its entirety"));
+				//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: nvscenemanager::...scene captured in its entirety"));
 
                 SceneManagerState = ENVSceneManagerState::Captured;
                 if (bAutoExitAfterExportingComplete)

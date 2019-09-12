@@ -37,7 +37,7 @@ public:
     virtual bool HandleScenePixelsData(const FNVTexturePixelData& CapturedPixelData,
         class UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor,
         class UNVSceneCapturerViewpointComponent* CapturedViewpoint,
-        int32 FrameIndex, int32 PicksetIndex) PURE_VIRTUAL(UNVSceneDataHandler::HandleScenePixelsData, return false; );
+        int32 FrameIndex, int32 PicksetIndex, int32 PicksetSubImage) PURE_VIRTUAL(UNVSceneDataHandler::HandleScenePixelsData, return false; );
 
     /// Handle the annotation data captured from the scene
     /// @param CapturedData  - The scene's annotated data
@@ -47,7 +47,7 @@ public:
     virtual bool HandleSceneAnnotationData(const TSharedPtr<FJsonObject>& CapturedData,
         class UNVSceneFeatureExtractor_AnnotationData* CapturedFeatureExtractor,
         class UNVSceneCapturerViewpointComponent* CapturedViewpoint,
-        int32 FrameIndex, int32 PicksetIndex) PURE_VIRTUAL(UNVSceneDataHandler::HandleSceneAnnotationData, return false; );
+        int32 FrameIndex, int32 PicksetIndex, int32 PicksetSubImage) PURE_VIRTUAL(UNVSceneDataHandler::HandleSceneAnnotationData, return false; );
 
     virtual void OnStartCapturingSceneData() PURE_VIRTUAL(UNVSceneDataHandler::OnStartCapturingSceneData, return; );
     virtual void OnStopCapturingSceneData() PURE_VIRTUAL(UNVSceneDataHandler::OnStopCapturingSceneData, return; );
@@ -98,7 +98,7 @@ public:
     virtual bool HandleScenePixelsData(const FNVTexturePixelData& CapturedPixelData,
                                        UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor,
                                        UNVSceneCapturerViewpointComponent* CapturedViewpoint,
-                                       int32 FrameIndex, int32 PicksetIndex) override;
+                                       int32 FrameIndex, int32 PicksetIndex, int32 PicksetSubImage) override;
 
     /// Handle the annotation data captured from the scene
     /// @param CapturedData  - The scene's annotated data
@@ -108,7 +108,7 @@ public:
     virtual bool HandleSceneAnnotationData(const TSharedPtr<FJsonObject>& CapturedData,
                                            class UNVSceneFeatureExtractor_AnnotationData* CapturedFeatureExtractor,
                                            class UNVSceneCapturerViewpointComponent* CapturedViewpoint,
-                                           int32 FrameIndex, int32 PicksetIndex) override;
+                                           int32 FrameIndex, int32 PicksetIndex, int32 PicksetSubImage) override;
 
     virtual void OnStartCapturingSceneData() override;
     virtual void OnStopCapturingSceneData() override;
@@ -138,7 +138,7 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Exporter")
     FString GetExportFilePath(class UNVSceneFeatureExtractor* CapturedFeatureExtractor,
                               UNVSceneCapturerViewpointComponent* CapturedViewpoint,
-                              int32 FrameIndex, int32 PicksetIndex,
+                              int32 FrameIndex, int32 PicksetIndex, int32 PicksetSubImage,
                               const FString& FileExtension) const;
 public:
 	//#miker:
@@ -212,7 +212,7 @@ public:
     virtual bool HandleScenePixelsData(const FNVTexturePixelData& CapturedPixelData,
                                        UNVSceneFeatureExtractor_PixelData* CapturedFeatureExtractor,
                                        UNVSceneCapturerViewpointComponent* CapturedViewpoint,
-                                       int32 FrameIndex, int32 PicksetIndex) override;
+                                       int32 FrameIndex, int32 PicksetIndex, int32 PicksetSubImage) override;
 
     /// Handle the annotation data captured from the scene
     /// @param CapturedData  - The scene's annotated data
@@ -222,7 +222,7 @@ public:
     virtual bool HandleSceneAnnotationData(const TSharedPtr<FJsonObject>& CapturedData,
         class UNVSceneFeatureExtractor_AnnotationData* CapturedFeatureExtractor,
         class UNVSceneCapturerViewpointComponent* CapturedViewpoint,
-        int32 FrameIndex, int32 PicksetIndex) override;
+        int32 FrameIndex, int32 PicksetIndex, int32 PicksetSubImage) override;
 
     virtual void OnCapturingCompleted() override;
 

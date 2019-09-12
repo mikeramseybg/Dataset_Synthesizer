@@ -271,7 +271,8 @@ void UNVObjectMaskMananger_Stencil::ScanActors(UWorld* World, int stencil_strate
         // NOTE: Stencil buffer is only 8bits => only support 255 values (ignore the 0)
         static const uint32 MaxNumberOfMasks = MAX_uint8;
 
-        const uint32 TotalMaskCount = (uint32)AllMaskNames.Num();
+		//#miker:
+		const uint32 TotalMaskCount = (uint32)AllMaskNames.Num();
         if (TotalMaskCount > MaxNumberOfMasks)
         {
             UE_LOG(LogNVSceneCapturer, Error, TEXT("UNVObjectMaskMananger_Stencil - There are too many different masks. Some of the valid actors will not have mask - MaxNumberOfMasks: %d - TotalMaskCount : %d"), MaxNumberOfMasks, TotalMaskCount);
@@ -286,9 +287,13 @@ void UNVObjectMaskMananger_Stencil::ScanActors(UWorld* World, int stencil_strate
             }
         }
 
-        MaskNameIdMap.Reset();
+		//#miker: need vert colors to persist
+		// but also it doesn't impact the stencil values
 
-        const uint32 ValidMaskCount = FMath::Min(TotalMaskCount, MaxNumberOfMasks);
+        //MaskNameIdMap.Reset();
+
+		//#miker:
+		const uint32 ValidMaskCount = FMath::Min(TotalMaskCount, MaxNumberOfMasks);
 
         // Assign the mask id for each valid map names
         for (uint32 i = 0; i < ValidMaskCount; i++)
@@ -301,7 +306,11 @@ void UNVObjectMaskMananger_Stencil::ScanActors(UWorld* World, int stencil_strate
             else if (SegmentationIdAssignmentType == ENVIdAssignmentType::SpreadEvenly)
             {
                 NewMaskId = (MaxNumberOfMasks / ValidMaskCount) * (i + 1);
-            }
+            }		
+
+			//#miker:
+			//UE_LOG(LogNVSceneCapturer, Warning, TEXT("------> %s, %d"), *AllMaskNames[i],NewMaskId);
+
             MaskNameIdMap.Add(AllMaskNames[i], NewMaskId);
         }
 
@@ -455,7 +464,8 @@ void UNVObjectMaskMananger_VertexColor::ScanActors(UWorld* World, int stencil_st
             }
         }
 
-        MaskNameIdMap.Reset();
+		//#miker: need vert colors to persist
+        //MaskNameIdMap.Reset();
 
         const uint32 ValidMaskCount = FMath::Min(TotalMaskCount, NVSceneCapturerUtils::MaxVertexColorID);
 
@@ -471,7 +481,19 @@ void UNVObjectMaskMananger_VertexColor::ScanActors(UWorld* World, int stencil_st
             {
                 NewMaskId = (NVSceneCapturerUtils::MaxVertexColorID / ValidMaskCount) * (i + 1);
             }
-            MaskNameIdMap.Add(AllMaskNames[i], NewMaskId);
+
+			//UE_LOG(LogNVSceneCapturer, Warning, TEXT("------> %s, %d"), *AllMaskNames[i], NewMaskId);
+
+			// only add the vert color if it hasn't been previously stored
+			//#miker:
+			if (!MaskNameIdMap.Contains(AllMaskNames[i]))
+			{
+				MaskNameIdMap.Add(AllMaskNames[i], NewMaskId);
+			}
+			//else
+			//{
+			//	UE_LOG(LogNVSceneCapturer, Warning, TEXT(" Using previous vertcolor ------> %s " ), *AllMaskNames[i] );
+			//}
         }
 
         // Apply the mask to valid actors
@@ -497,8 +519,8 @@ void UNVObjectMaskMananger_VertexColor::ScanActors(UWorld* World, int stencil_st
 
 						if (sim_item != nullptr && CheckActor != sim_item )
 						{
-							const FString miker = FString::Printf(TEXT("#mikerdog: %s "), *CheckActor->GetName());
-							GLog->Log(miker);
+							//const FString miker = FString::Printf(TEXT("#mikerdog: %s "), *CheckActor->GetName());
+							//GLog->Log(miker);
 
 							ApplyVertexColorMaskToActor(CheckActor, 0);
 						}

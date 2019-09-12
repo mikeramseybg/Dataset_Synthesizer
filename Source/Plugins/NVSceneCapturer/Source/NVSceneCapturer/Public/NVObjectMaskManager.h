@@ -76,6 +76,13 @@ public:
 
 	void Init(ENVActorMaskNameType NewMaskNameType, ENVIdAssignmentType NewIdAssignmentType);
 
+	// #miker: destroy cached vert/stencil values
+	virtual void resetCachedVertAndStencilValues()
+	{
+		AllMaskNames.Reset();
+		AllMaskActors.Reset();
+	}
+
 protected:
 	static FString GetActorMaskName(ENVActorMaskNameType MaskNameType, const AActor* CheckActor);
 	static void ApplyStencilMaskToActor(AActor* CheckActor, uint8 MaskId);
@@ -115,7 +122,7 @@ public:
     UNVObjectMaskMananger_Stencil();
 	//#miker: stencil_strategy
     void ScanActors(UWorld* World, int stencil_strategy=0, AActor* sim_item = nullptr) override;
-
+	void resetCachedVertAndStencilValues() {}
     uint8 GetMaskId(const FString& MaskName) const;
     uint8 GetMaskId(const AActor* CheckActor) const;
 protected:
@@ -136,7 +143,7 @@ public:
     UNVObjectMaskMananger_VertexColor();
 	//#miker: stencil_strategy
     void ScanActors(UWorld* World, int stencil_strategy=0, AActor* sim_item = nullptr) override;
-
+	void resetCachedVertAndStencilValues() {}
     uint32 GetMaskId(const FString& MaskName) const;
     uint32 GetMaskId(const AActor* CheckActor) const;
 
@@ -159,6 +166,7 @@ public:
 	void Init(UObject* OwnerObject);
 	//#miker: stencil_strategy
 	void ScanActors(UWorld* World, int stencil_strategy = 0, AActor* sim_item = nullptr);
+	void resetCachedVertAndStencilValues() {}
 
 protected:
 // Editor properties
@@ -204,6 +212,7 @@ public:
 	void Init(UObject* OwnerObject);
 	//#miker: stencil_strategy
 	void ScanActors(UWorld* World, int stencil_strategy = 0, AActor* sim_item = nullptr);
+	void resetCachedVertAndStencilValues() {}
 
 protected:
 // Editor properties

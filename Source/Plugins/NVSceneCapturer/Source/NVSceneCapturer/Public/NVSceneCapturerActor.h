@@ -217,6 +217,7 @@ public:
 	// baseset.pickset
 	int32 m_overallFrameAccumulator = 0;
 	int32 m_picksetFrameAccumulator = 0;
+	int32 m_picksetSubImage = 0;
 	bool m_BGControllerReady = false;
 	bool m_BGCapturing = false;
 	int BGNumberOfFramesToCapture = 1;
@@ -237,11 +238,15 @@ public:
 		m_simulationSave = simulationSave;
 	}
 
-	void BGControllerIsCurrentlyDone(bool state, int sim_run, int pickset_run) 
+	void BGControllerIsCurrentlyDone(bool state, int sim_run, 
+									 int pickset_run, int pickset_subimage,
+									 int feature_extractor_phase)
 	{
 		m_BGControllerReady = state;
 		m_overallFrameAccumulator = sim_run;
 		m_picksetFrameAccumulator = pickset_run;
+		m_bgAlternateFECount = feature_extractor_phase;
+		m_picksetSubImage = pickset_subimage;
 
 	}
 

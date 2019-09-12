@@ -63,8 +63,8 @@ void UNVSceneCapturerViewpointComponent::SetupFeatureExtractors()
             }
 
 			FString ex_name = NewExtractorName.GetPlainNameString();
-			const FString miker = FString::Printf(TEXT("#mikerdog: %s "), *NewExtractorName.GetPlainNameString());
-			GLog->Log(miker);
+			//const FString miker = FString::Printf(TEXT("#mikerdog: %s "), *NewExtractorName.GetPlainNameString());
+			//GLog->Log(miker);
 
         }
     }
