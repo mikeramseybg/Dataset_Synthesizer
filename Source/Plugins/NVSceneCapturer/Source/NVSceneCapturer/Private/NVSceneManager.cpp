@@ -289,7 +289,7 @@ void ANVSceneManager::SetupScene()
 
         // After the scene setup is done then start applying class and instance segmentation marks
 		// #miker:
-        UpdateSegmentationMask();
+        UpdateSegmentationMask(m_vertColor);
 
         // TODO: Broadcast Ready event
         SceneManagerState = ENVSceneManagerState::Ready;
@@ -316,7 +316,7 @@ void ANVSceneManager::SetupSceneInternal()
 }
 
 //#miker: stencil_strategy
-void ANVSceneManager::UpdateSegmentationMask(int stencil_strategy, int alternateFECount)
+void ANVSceneManager::UpdateSegmentationMask(uint32& vert_color,int stencil_strategy, int alternateFECount)
 {
 	//const FString miker = FString::Printf(TEXT("#mikerdog: %d "), alternateFECount);
 	//GLog->Log(miker);
@@ -330,7 +330,7 @@ void ANVSceneManager::UpdateSegmentationMask(int stencil_strategy, int alternate
 		UWorld* World = GetWorld();
 		if (World)
 		{
-			ObjectClassSegmentation.ScanActors(World);
+			ObjectClassSegmentation.ScanActors(World,m_vertColor);
 
 			bool bNeedInstanceSegmentation = false;
 			for (ANVSceneCapturerActor* CheckCapturer : SceneCapturers)
@@ -417,11 +417,11 @@ void ANVSceneManager::UpdateSegmentationMask(int stencil_strategy, int alternate
 			{
 				if (!bgFE) 
 				{ 
-					ObjectInstanceSegmentation.ScanActors(World); 
+					ObjectInstanceSegmentation.ScanActors(World,m_vertColor); 
 				} 
 				else
 				{
-					ObjectInstanceSegmentation_targeted.ScanActors(World, 0, m_simItem);
+					ObjectInstanceSegmentation_targeted.ScanActors(World,m_vertColor, 0, m_simItem);
 				}
 
 			}

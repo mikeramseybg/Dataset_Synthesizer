@@ -524,7 +524,7 @@ void ANVSceneCapturerActor::StartCapturing_Internal()
             if (ensure(NVSceneManagerPtr))
             {
                 // Make sure the segmentation mask of objects in the scene are up-to-date before capturing them
-                NVSceneManagerPtr->UpdateSegmentationMask(0,m_bgAlternateFECount);
+                NVSceneManagerPtr->UpdateSegmentationMask(m_vertColor,0,m_bgAlternateFECount);
 				updateComponentFeatureExtractorList();
 		   }
 

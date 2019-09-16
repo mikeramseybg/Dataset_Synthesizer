@@ -65,7 +65,9 @@ bool UNVSceneDataExporter::HandleScenePixelsData(const FNVTexturePixelData& Capt
 	{
 		ENVImageFormat ExportImageFormat = ENVImageFormat::PNG;
 
-		const FString NewExportFilePath = GetExportFilePath(CapturedFeatureExtractor, CapturedViewpoint, FrameIndex, PicksetIndex, PicksetSubImage, GetExportImageExtension(ExportImageFormat));
+		const FString NewExportFilePath = GetExportFilePath(CapturedFeatureExtractor, CapturedViewpoint,
+										FrameIndex, PicksetIndex,
+										PicksetSubImage, GetExportImageExtension(ExportImageFormat));
 		ImageExporterThread->ExportImage(CapturedPixelData, NewExportFilePath, ExportImageFormat);
 		ImageExporterThread->ExportImage(CapturedPixelData, NewExportFilePath, ExportImageFormat);
 		bResult = true;
@@ -104,7 +106,9 @@ bool UNVSceneDataExporter::HandleSceneAnnotationData(const TSharedPtr<FJsonObjec
     {
         static const FString JsonExtension = TEXT(".json");
 
-        const FString NewExportFilePath = GetExportFilePath(CapturedFeatureExtractor, CapturedViewpoint, FrameIndex, PicksetIndex, PicksetSubImage, JsonExtension);
+        const FString NewExportFilePath = GetExportFilePath(CapturedFeatureExtractor, CapturedViewpoint,
+													FrameIndex, PicksetIndex,
+													PicksetSubImage, JsonExtension);
         return NVSceneCapturerUtils::SaveJsonObjectToFile(CapturedData, NewExportFilePath);
         bResult = true;
     }

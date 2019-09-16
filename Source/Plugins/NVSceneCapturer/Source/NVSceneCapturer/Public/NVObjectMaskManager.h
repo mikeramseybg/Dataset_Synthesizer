@@ -72,7 +72,7 @@ class NVSCENECAPTURER_API UNVObjectMaskMananger : public UObject
 public:
     UNVObjectMaskMananger();
 	//#miker: stencil_strategy
-    virtual void ScanActors(UWorld* World, int stencil_strategy=0, AActor* sim_item = nullptr);
+    virtual void ScanActors(UWorld* World, uint32& vert_color, int stencil_strategy=0, AActor* sim_item = nullptr);
 
 	void Init(ENVActorMaskNameType NewMaskNameType, ENVIdAssignmentType NewIdAssignmentType);
 
@@ -121,7 +121,7 @@ class NVSCENECAPTURER_API UNVObjectMaskMananger_Stencil : public UNVObjectMaskMa
 public:
     UNVObjectMaskMananger_Stencil();
 	//#miker: stencil_strategy
-    void ScanActors(UWorld* World, int stencil_strategy=0, AActor* sim_item = nullptr) override;
+    void ScanActors(UWorld* World, uint32& vert_color, int stencil_strategy=0, AActor* sim_item = nullptr) override;
 	void resetCachedVertAndStencilValues() {}
     uint8 GetMaskId(const FString& MaskName) const;
     uint8 GetMaskId(const AActor* CheckActor) const;
@@ -142,7 +142,7 @@ class NVSCENECAPTURER_API UNVObjectMaskMananger_VertexColor: public UNVObjectMas
 public:
     UNVObjectMaskMananger_VertexColor();
 	//#miker: stencil_strategy
-    void ScanActors(UWorld* World, int stencil_strategy=0, AActor* sim_item = nullptr) override;
+    void ScanActors(UWorld* World, uint32& vert_color, int stencil_strategy=0, AActor* sim_item = nullptr) override;
 	void resetCachedVertAndStencilValues() {}
     uint32 GetMaskId(const FString& MaskName) const;
     uint32 GetMaskId(const AActor* CheckActor) const;
@@ -165,7 +165,7 @@ public:
 	uint32 GetInstanceId(const AActor* CheckActor) const;
 	void Init(UObject* OwnerObject);
 	//#miker: stencil_strategy
-	void ScanActors(UWorld* World, int stencil_strategy = 0, AActor* sim_item = nullptr);
+	void ScanActors(UWorld* World, uint32& vert_color, int stencil_strategy = 0, AActor* sim_item = nullptr);
 	void resetCachedVertAndStencilValues() {}
 
 protected:
@@ -211,7 +211,7 @@ public:
 	uint8 GetInstanceId(const AActor* CheckActor) const;
 	void Init(UObject* OwnerObject);
 	//#miker: stencil_strategy
-	void ScanActors(UWorld* World, int stencil_strategy = 0, AActor* sim_item = nullptr);
+	void ScanActors(UWorld* World, uint32& vert_color, int stencil_strategy = 0, AActor* sim_item = nullptr);
 	void resetCachedVertAndStencilValues() {}
 
 protected:

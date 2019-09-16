@@ -211,7 +211,7 @@ bool UNVObjectMaskMananger::ShouldCheckActorMask(const AActor* CheckActor) const
     return false;
 }
 //#miker: stencil_strategy
-void UNVObjectMaskMananger::ScanActors(UWorld* World, int stencil_strategy, AActor* sim_item)
+void UNVObjectMaskMananger::ScanActors(UWorld* World,  uint32& vert_color, int stencil_strategy, AActor* sim_item)
 {
     AllMaskNames.Reset();
     AllMaskActors.Reset();
@@ -255,7 +255,7 @@ UNVObjectMaskMananger_Stencil::UNVObjectMaskMananger_Stencil() : Super()
 	ActorMaskNameType = ENVActorMaskNameType::UseActorInstanceName;
 }
 //#miker: stencil_strategy
-void UNVObjectMaskMananger_Stencil::ScanActors(UWorld* World, int stencil_strategy, AActor* sim_item)
+void UNVObjectMaskMananger_Stencil::ScanActors(UWorld* World, uint32& vert_color, int stencil_strategy, AActor* sim_item)
 {
     ensure(World!=nullptr);
     if (!World)
@@ -264,7 +264,7 @@ void UNVObjectMaskMananger_Stencil::ScanActors(UWorld* World, int stencil_strate
     }
     else
     {
-        Super::ScanActors(World,stencil_strategy);
+		Super::ScanActors(World, vert_color, stencil_strategy);
 
         // TODO: Need to check whether the project enabled custom depth rendering or not
 
@@ -436,7 +436,7 @@ uint32 UNVObjectMaskMananger_VertexColor::GetMaskId(const AActor* CheckActor) co
     return result;
 }
 //#miker: stencil_strategy
-void UNVObjectMaskMananger_VertexColor::ScanActors(UWorld* World, int stencil_strategy, AActor* sim_item)
+void UNVObjectMaskMananger_VertexColor::ScanActors(UWorld* World, uint32& vert_color, int stencil_strategy, AActor* sim_item)
 {
     ensure(World!=nullptr);
     if (!World)
@@ -445,7 +445,7 @@ void UNVObjectMaskMananger_VertexColor::ScanActors(UWorld* World, int stencil_st
     }
     else
     {
-        Super::ScanActors(World, stencil_strategy);
+        Super::ScanActors(World,vert_color, stencil_strategy);
 
         // TODO: Unify this function and UNVObjectMaskMananger_Stencil::ScanActors using template ?
 
@@ -509,6 +509,7 @@ void UNVObjectMaskMananger_VertexColor::ScanActors(UWorld* World, int stencil_st
 				{
 					//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: annotation tag"));
 					const uint32 ActorMaskId = GetMaskId(CheckActor);
+					vert_color = ActorMaskId;
 					if (ActorMaskId > 0)
 					{
 						//#miker:punk
@@ -527,6 +528,7 @@ void UNVObjectMaskMananger_VertexColor::ScanActors(UWorld* World, int stencil_st
 						else
 						{
 							ApplyVertexColorMaskToActor(CheckActor, ActorMaskId);
+							//GLog->Log(TEXT("Vertcolor nvomm:") + FString::FormatAsNumber((int)ActorMaskId));
 						}
 					}
 				}
@@ -561,10 +563,10 @@ void FNVObjectSegmentation_Instance::Init(UObject* OwnerObject)
 	VertexColorMaskManager->Init(ENVActorMaskNameType::UseActorInstanceName, SegmentationIdAssignmentType);
 }
 //#miker: stencil_strategy
-void FNVObjectSegmentation_Instance::ScanActors(UWorld* World, int stencil_strategy, AActor* sim_item)
+void FNVObjectSegmentation_Instance::ScanActors(UWorld* World, uint32& vert_color, int stencil_strategy, AActor* sim_item)
 {
 	check(VertexColorMaskManager != nullptr);
-	VertexColorMaskManager->ScanActors(World, stencil_strategy, sim_item);
+	VertexColorMaskManager->ScanActors(World, vert_color,stencil_strategy, sim_item);
 }
 
 //================================== FNVObjectSegmentation_Class ==================================
@@ -609,8 +611,8 @@ void FNVObjectSegmentation_Class::Init(UObject* OwnerObject)
 	StencilMaskManager->Init(ActorMaskNameType, SegmentationIdAssignmentType);
 }
 //#miker: stencil_strategy
-void FNVObjectSegmentation_Class::ScanActors(UWorld* World, int stencil_strategy, AActor* sim_item)
+void FNVObjectSegmentation_Class::ScanActors(UWorld* World, uint32& vert_color, int stencil_strategy, AActor* sim_item)
 {
 	check(StencilMaskManager != nullptr);
-	StencilMaskManager->ScanActors(World,stencil_strategy);
+	StencilMaskManager->ScanActors(World,vert_color,stencil_strategy);
 }

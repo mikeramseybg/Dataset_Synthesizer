@@ -70,9 +70,8 @@ public:
     /// Update the segmentation masks for all the objects in the scene.
     /// NOTE: This function should be called when the number of objects in the scene changed
 	//#miker: support for rebuilding ids 
-	//#miker: stencil_strategy
-	void UpdateSegmentationMaskMike(int stencil_strategy = 0);
-    void UpdateSegmentationMask(int stencil_strategy = 0, int alternateFECount=0);
+	//#miker:
+    void UpdateSegmentationMask(uint32& vert_color,int stencil_strategy = 0, int alternateFECount=0);
 
 	UPROPERTY(EditAnywhere, Category = CapturerScene)
 	FNVObjectSegmentation_Class ObjectClassSegmentation;
@@ -89,6 +88,7 @@ public:
 	FTimerHandle MemberTimerHandle;
 	int RepeatingCallsRemaining = 1;
 	AActor* m_simItem = nullptr;
+	uint32 m_vertColor = 0;
 	ANVSceneCapturerActor* m_simpleCapturer = nullptr;
 	void RepeatingFunction();
 	void RestartSceneManager();
@@ -98,6 +98,12 @@ public:
 	// in addition to scene as a whole
 	void storeBGSimItemActor(AActor* sim_item);
 	void resetBGSimItemActor();
+	// vertex id for the current sim_item accessor
+	uint32 getVertexColor()
+	{
+		return m_vertColor;
+	};
+
 	//destroy cached vert/stencil values
 	// caled post individual sim run
 	void resetCachedVertAndStencilValues()

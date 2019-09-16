@@ -230,6 +230,8 @@ public:
 	// 0 : nvidia fe's (instance,class, etc..)
 	// 1 : bg (bg instance with alternate vc)
 	int m_bgAlternateFECount = 0;
+	uint32 m_vertColor = 0;
+
 	void updateComponentFeatureExtractorList();
 
 	void setBGTargetFolderOverride(bool useBGTargetOverride, FString simulationSave)
