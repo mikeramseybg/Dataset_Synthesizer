@@ -69,7 +69,8 @@ bool UNVSceneDataExporter::HandleScenePixelsData(const FNVTexturePixelData& Capt
 										FrameIndex, PicksetIndex,
 										PicksetSubImage, GetExportImageExtension(ExportImageFormat));
 		ImageExporterThread->ExportImage(CapturedPixelData, NewExportFilePath, ExportImageFormat);
-		ImageExporterThread->ExportImage(CapturedPixelData, NewExportFilePath, ExportImageFormat);
+		//#miker: what the hell?!?
+		//ImageExporterThread->ExportImage(CapturedPixelData, NewExportFilePath, ExportImageFormat);
 		bResult = true;
 	}
 	else
@@ -102,7 +103,10 @@ bool UNVSceneDataExporter::HandleSceneAnnotationData(const TSharedPtr<FJsonObjec
 	int32 FrameIndex, int32 PicksetIndex, int32 PicksetSubImage)
 {
     bool bResult = false;
-    if (CapturedFeatureExtractor && CapturedViewpoint)
+	//#miker: added the check if it's enabled
+	// otherwise it *always* dumps the od json...
+    if (CapturedFeatureExtractor && CapturedFeatureExtractor->IsEnabled()
+		&& CapturedViewpoint)
     {
         static const FString JsonExtension = TEXT(".json");
 
@@ -114,6 +118,7 @@ bool UNVSceneDataExporter::HandleSceneAnnotationData(const TSharedPtr<FJsonObjec
     }
     return bResult;
 }
+
 //#miker:
 void UNVSceneDataExporter::setBGTargetFolderOverride(bool useBGTargetOverride, FString simulationSave)
 {
@@ -432,11 +437,7 @@ FString UNVSceneDataExporter::GetExportFilePath(UNVSceneFeatureExtractor* Captur
 {
 
 	FString fe_name = CapturedFeatureExtractor->GetDisplayName();
-	//{
-	//	const FString miker = FString::Printf(TEXT("#mikerdog: GetExportFilePath1:  %s %d "), *fe_name, CapturedFeatureExtractor->IsEnabled());
-	//	GLog->Log(miker);
-	//}
-
+	
     const FString OutputFolderPath = GetFullOutputDirectoryPath();
     FString OutputFileName = FString::Printf(TEXT("%06i.%06i.%06i"), FrameIndex,PicksetIndex, PicksetSubImage);
     const auto& ViewpointSettings = CapturedViewpoint->GetSettings();
@@ -449,6 +450,7 @@ FString UNVSceneDataExporter::GetExportFilePath(UNVSceneFeatureExtractor* Captur
 	//	const FString miker = FString::Printf(TEXT("#mikerdog: GetExportFilePath2:  %s "), *OutputFileName);
 	//	GLog->Log(miker);
 	//}
+
     if (!CapturedFeatureExtractor->ExportFileNamePostfix.IsEmpty())
     {
 		//#miker: stencil strategy file ext override

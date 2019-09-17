@@ -576,10 +576,12 @@ void ANVSceneCapturerActor::updateComponentFeatureExtractorList()
 			auto& fe = FeatureExtractorSettings[i];
 			UNVSceneFeatureExtractor* ccref = fe.FeatureExtractorRef;
 			FString fe_name = ccref->GetDisplayName();
-			//const FString miker = FString::Printf(TEXT("#miker_pigeon: %s "), *fe_name);
+			
+			//#miker
+			const bool update_enable_to = ccref->IsEnabled();
+			//const FString miker = FString::Printf(TEXT("#FeaureExtractor Status: %s - %d"), *fe_name,update_enable_to);
 			//GLog->Log(miker);
 
-			bool update_enable_to = ccref->IsEnabled();
 			ccref->updateFE(viewpoint_comp, i, update_enable_to);
 		}
 	}
