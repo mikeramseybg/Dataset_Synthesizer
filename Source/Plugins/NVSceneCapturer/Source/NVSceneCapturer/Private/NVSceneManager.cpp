@@ -118,10 +118,18 @@ void ANVSceneManager::storeBGSimItemActor(AActor* sim_item)
 	if (sim_item == nullptr)
 	{
 		UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: sim actor is null!!!!!!!!"));
+		return;
 	}
-
 	m_simItem = sim_item;
-	m_simpleCapturer->storeBGSimItemActor(m_simItem);
+	if (m_simpleCapturer)
+	{	
+		m_simpleCapturer->storeBGSimItemActor(m_simItem);
+	}
+	else
+	{
+		UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: Capturer is null, what this normally will mean is that\n"));
+		UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: the play mode is simulated and this breaks aspects of ndds.\n"));
+	}
 }
 
 void ANVSceneManager::resetBGSimItemActor()
@@ -156,7 +164,7 @@ void ANVSceneManager::RepeatingFunction()
 	if (--RepeatingCallsRemaining <= 0)
 	{
 
-		UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: RepeatingFunction ANVSceneManager"));
+		//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: RepeatingFunction ANVSceneManager"));
 		GetWorldTimerManager().ClearTimer(MemberTimerHandle);
 		// MemberTimerHandle can now be reused for any other Timer.
 	}
@@ -168,7 +176,10 @@ void ANVSceneManager::BeginPlay()
 {
     Super::BeginPlay();
 	UWorld* World = GetWorld();
+
 #if WITH_EDITOR
+	//bool a = GUnrealEd->bIsSimulatingInEditor;
+	//bool b = GUnrealEd->bIsSimulateInEditorQueued;	
 	bool bIsSimulating = GUnrealEd ? (GUnrealEd->bIsSimulatingInEditor || GUnrealEd->bIsSimulateInEditorQueued) : false;
 	if (!World || !World->IsGameWorld() || bIsSimulating)
 	{

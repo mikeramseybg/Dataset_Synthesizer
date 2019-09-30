@@ -304,7 +304,7 @@ void ANVSceneCapturerActor::CheckCaptureScene()
     AGameModeBase* CurrentGameMode = World ? World->GetAuthGameMode() : nullptr;
 	ENVSceneManagerState state = ANVSceneManagerPtr->GetState();
 
-    if (bNeedToExportScene && bSceneIsReady)
+    if (bNeedToExportScene && bSceneIsReady )
     {
         if (CanHandleMoreSceneData())
         {
@@ -634,8 +634,9 @@ void ANVSceneCapturerActor::OnCompleted()
         const float CapturingDuration = CompletedCapturingTimestamp - StartCapturingTimestamp;
 
 		//#miker:
-        //UE_LOG(LogNVSceneCapturer, Warning, TEXT("Capturing completed!!!\nTotal capturing duration: %.6f\nStart time: %.6f\nCompleted time: %.6f"),
-        //      CapturedDuration, StartCapturingTimestamp, CompletedCapturingTimestamp);
+        UE_LOG(LogNVSceneCapturer, Log,
+			  TEXT("Capture stats:\nduration: %.6f"),// Start: %.6f End: %.6f"),
+              CapturedDuration, StartCapturingTimestamp, CompletedCapturingTimestamp);
 
         for (UNVSceneCapturerViewpointComponent* ViewpointComp : ViewpointList)
         {
