@@ -85,15 +85,12 @@ public:
 	FNVObjectSegmentation_Instance ObjectInstanceSegmentation_targeted;
 
 	//#miker: bg block
-	FTimerHandle MemberTimerHandle;
-	int RepeatingCallsRemaining = 1;
 	AActor* m_simItem = nullptr;
 	uint32 m_vertColor = 0;
 	ANVSceneCapturerActor* m_simpleCapturer = nullptr;
-	void RepeatingFunction();
 	void RestartSceneManager();
 	void BGControllerIsCurrentlyDone(bool state,int sim_run, int pickset_run,
-		int pickset_subimage, int feature_extractor_phase);
+							int pickset_subimage, int feature_extractor_phase);
 	// individual instance image generation
 	// in addition to scene as a whole
 	void storeBGSimItemActor(AActor* sim_item);

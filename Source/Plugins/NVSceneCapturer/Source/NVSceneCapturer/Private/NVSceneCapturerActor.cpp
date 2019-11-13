@@ -23,6 +23,8 @@
 //#miker:
 //debug defines
 //#define BGDEBUG_CAPTURESCENE_FILE
+//#define BGDEBUG_LOG_FRAME_TIMING_DATA
+
 const float MAX_StartCapturingDuration = 5.0f; // max duration to wait for ANVSceneCapturerActor::StartCapturing to successfully begin capturing before emitting warning messages
 
 ANVSceneCapturerActor::ANVSceneCapturerActor(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -547,7 +549,12 @@ void ANVSceneCapturerActor::StartCapturing_Internal()
             // bIsActive is public. we need to copy bIsActive state into the protected value.
             CurrentState = ENVSceneCapturerState::Running;
             // NOTE: Make it wait till the next frame to start exporting since the scene capturer only just start capturing now
-            StartCapturingTimestamp = GetWorld()->GetRealTimeSeconds();
+			//#miker: this is terrible... if there is every any sort
+			// of frame stall caused by really anything than this just accumulates
+			// perpetually...so it appears to only be used ensuring that next grab
+			// just use the last capture plus some fudge to ensure exports occur on the
+			// next frame and not 13frames in the future :-(
+			StartCapturingTimestamp = LastCaptureTimestamp + 0.1f;// GetWorld()->GetRealTimeSeconds();
             LastCaptureTimestamp = StartCapturingTimestamp + 0.1f;
 
             // Let all the viewpoint component start capturing
@@ -634,10 +641,11 @@ void ANVSceneCapturerActor::OnCompleted()
         const float CapturingDuration = CompletedCapturingTimestamp - StartCapturingTimestamp;
 
 		//#miker:
-        UE_LOG(LogNVSceneCapturer, Log,
-			  TEXT("Capture stats:\nduration: %.6f"),// Start: %.6f End: %.6f"),
-              CapturedDuration, StartCapturingTimestamp, CompletedCapturingTimestamp);
-
+#ifdef BGDEBUG_LOG_FRAME_TIMING_DATA
+		 UE_LOG(LogNVSceneCapturer, Log,
+			  TEXT("Capture stats: duration: %.6f"),// Start: %.6f End: %.6f"),
+            CapturedDuration, StartCapturingTimestamp, CompletedCapturingTimestamp);
+#endif
         for (UNVSceneCapturerViewpointComponent* ViewpointComp : ViewpointList)
         {
             ViewpointComp->StopCapturing();
@@ -649,9 +657,6 @@ void ANVSceneCapturerActor::OnCompleted()
             SceneDataHandler->OnCapturingCompleted();
         }
 		
-		//++m_bgAlternateFECount;
-		
-
         OnCompletedEvent.Broadcast(this, true);
     }
 }

@@ -113,6 +113,13 @@ void UNVSceneCaptureComponent2D::InitTextureRenderTarget()
 void UNVSceneCaptureComponent2D::UpdateSceneCaptureContents(FSceneInterface* Scene)
 {
     Super::UpdateSceneCaptureContents(Scene);
+	//#miker: at this point we now have the various images that are intended
+	// for composition with the real-world base image.
+	// ssr, ssm
+	// occurs in UpdateSceneCaptureContentDeferred_RenderThread()
+	//  ...this is not entirely the case, as this is hit when totesim is
+	//    executed...
+
 
     // After the render commands to capture the scene are issued, it's safe to start issues pixels readback command for the texture
     OnSceneCaptured();

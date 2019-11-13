@@ -102,12 +102,10 @@ void ANVSceneManager::PostInitializeComponents()
 void ANVSceneManager::RestartSceneManager()
 {
 	//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: restartSceneManager"));
-
 	ResetState();
-	//Reset();
-	RepeatingCallsRemaining = 1;
 	//this needs to be called from within the plugins completion
 	//state
+	//#miker: 11.12.19 test
 	//m_simpleCapturer->restartCaptureActor();
 	
 }
@@ -139,11 +137,12 @@ void ANVSceneManager::resetBGSimItemActor()
 }
 
 void ANVSceneManager::BGControllerIsCurrentlyDone(bool state, int sim_run, 
-	int pickset_run, int pickset_subimage,
-	int feature_extractor_phase)
+									int pickset_run, int pickset_subimage,
+									int feature_extractor_phase)
 {
 	if (m_simpleCapturer)
 	{
+		//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: "));
 		m_simpleCapturer->BGControllerIsCurrentlyDone(state, sim_run, pickset_run, pickset_subimage, feature_extractor_phase);
 	}
 }
@@ -156,30 +155,12 @@ void ANVSceneManager::setBGTargetFolderOverride(bool useBGTargetOverride, FStrin
 	}
 }
 
-void ANVSceneManager::RepeatingFunction()
-{
-	//#miker: effectively a poor mans lazy loading
-	// may need this delay for packaged builds
-
-	if (--RepeatingCallsRemaining <= 0)
-	{
-
-		//UE_LOG(LogNVSceneCapturer, Warning, TEXT("#miker: RepeatingFunction ANVSceneManager"));
-		GetWorldTimerManager().ClearTimer(MemberTimerHandle);
-		// MemberTimerHandle can now be reused for any other Timer.
-	}
-}
-
-const float DELAYBEGINDELAYSM = 2.0f;
-
 void ANVSceneManager::BeginPlay()
 {
     Super::BeginPlay();
 	UWorld* World = GetWorld();
 
 #if WITH_EDITOR
-	//bool a = GUnrealEd->bIsSimulatingInEditor;
-	//bool b = GUnrealEd->bIsSimulateInEditorQueued;	
 	bool bIsSimulating = GUnrealEd ? (GUnrealEd->bIsSimulatingInEditor || GUnrealEd->bIsSimulateInEditorQueued) : false;
 	if (!World || !World->IsGameWorld() || bIsSimulating)
 	{
